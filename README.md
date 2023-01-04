@@ -37,7 +37,7 @@ public class OutputModel
 
 ## Installation
 
-* Downlaod bundle version [RevitAddin.DA.Tester.bundle.zip](../../releases/latest/download/RevitAddin.DA.Tester.bundle.zip)
+* Download bundle version [RevitAddin.DA.Tester.bundle.zip](../../releases/latest/download/RevitAddin.DA.Tester.bundle.zip)
 * Download and install [RevitAddin.DA.Tester.exe](../../releases/latest/download/RevitAddin.DA.Tester.zip)
 
 ## License
