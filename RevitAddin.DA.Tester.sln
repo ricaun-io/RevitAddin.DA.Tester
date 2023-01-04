@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{CEE7DFBF-1830-47FB-8DB8-546D2C2079D0}") = "RevitAddin.DA.Tester", "RevitAddin.DA.Tester\RevitAddin.DA.Tester.csproj", "{7C324916-9F8D-43B0-B226-DA67D2504393}"
+EndProject
+Project("{CEE7DFBF-1830-47FB-8DB8-546D2C2079D0}") = "Build", "Build\Build.csproj", "{99BC4B5A-3BB9-464B-AA8E-4A377FB77D04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{64A2F0FA-4270-45D5-B9DB-3561832ADA42}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C324916-9F8D-43B0-B226-DA67D2504393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C324916-9F8D-43B0-B226-DA67D2504393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C324916-9F8D-43B0-B226-DA67D2504393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C324916-9F8D-43B0-B226-DA67D2504393}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99BC4B5A-3BB9-464B-AA8E-4A377FB77D04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99BC4B5A-3BB9-464B-AA8E-4A377FB77D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
