@@ -16,7 +16,7 @@ Revit Addin project to run in [Design Automation](https://aps.autodesk.com/desig
 └── ...
 ```
 
-### InputModel
+### [InputModel.cs](RevitAddin.DA.Tester/Models/InputModel.cs)
 ```C#
 public class InputModel
 {
@@ -24,7 +24,7 @@ public class InputModel
 }
 ```
 
-### OutputModel
+### [OutputModel.cs](RevitAddin.DA.Tester/Models/OutputModel.cs)
 ```C#
 public class OutputModel
 {
@@ -37,6 +37,7 @@ public class OutputModel
 
 ## Installation
 
+* Downlaod bundle version [RevitAddin.DA.Tester.bundle.zip](../../releases/latest/download/RevitAddin.DA.Tester.bundle.zip)
 * Download and install [RevitAddin.DA.Tester.exe](../../releases/latest/download/RevitAddin.DA.Tester.zip)
 
 ## License
