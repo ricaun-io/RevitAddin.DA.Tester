@@ -43,18 +43,24 @@ namespace DesignAutomationConsole.Services
         private const string LATEST = "$LATEST";
         private const string BUNDLE_NAME = "Bundle";
         private const string ACTIVITY_NAME = "Activity";
-        private const string REVIT_CORE_CONSOLE_EXE = "revitcoreconsole.exe";
+        private const string CORE_ENGINE_REVIT = "Autodesk.Revit";
+        private const string CORE_CONSOLE_EXE_REVIT = "revitcoreconsole.exe";
         public virtual string BundleName() => BUNDLE_NAME;
         public virtual string ActivityName() => ACTIVITY_NAME;
-        public virtual string CoreConsoleExe() => REVIT_CORE_CONSOLE_EXE;
+        public virtual string CoreEngine() => CORE_ENGINE_REVIT;
+        public virtual string CoreConsoleExe() => CORE_CONSOLE_EXE_REVIT;
         #endregion
 
         #region Get
-        private string GetQualifiedId(string packageName)
+        private string GetQualifiedId(string packageName, bool enviromentEnable = true)
         {
             var name = GetNickname();
             var enviroment = this.forgeEnvironment;
-            return $"{name}.{packageName}+{enviroment}";
+            var qualifiedId = $"{name}.{packageName}";
+            if (enviromentEnable)
+                qualifiedId += $"+{enviroment}";
+
+            return qualifiedId;
         }
         private string GetBundleName(string appName)
         {
@@ -78,17 +84,7 @@ namespace DesignAutomationConsole.Services
         #region Bundle
         public async Task<IEnumerable<string>> GetAllBundlesAsync(bool account = true)
         {
-            var bundles = await this.designAutomationClient.GetAppBundlesAsync();
-            var data = bundles.Data;
-
-            var paginationToken = bundles.PaginationToken;
-            while (!string.IsNullOrEmpty(paginationToken))
-            {
-                bundles = await this.designAutomationClient.GetAppBundlesAsync(paginationToken);
-                paginationToken = bundles.PaginationToken;
-                data.AddRange(bundles.Data);
-            }
-
+            var data = await GetAllItems(this.designAutomationClient.GetAppBundlesAsync);
             if (account)
             {
                 var user = await this.GetNicknameAsync();
@@ -99,99 +95,107 @@ namespace DesignAutomationConsole.Services
 
             return data.OrderBy(e => e);
         }
-
-        public async Task<AppBundle> CreateAppBundleAsync(string appName, string fileName, string engine)
-        {
-            string packageName = this.GetBundleName(appName);
-
-            string zipPath = fileName;
-            if (!File.Exists(zipPath))
-            {
-                throw new FileNotFoundException($"Bundle {fileName} not found!");
-            }
-
-            var bundles = await this.GetAllBundlesAsync(false);
-
-            // Check for prev versions of app bundle
-            AppBundle bundleVersion;
-            string bundleId = GetQualifiedId(packageName);
-
-            if (!bundles.Contains(bundleId))
-            {
-                bundleVersion = await CreateNewBundleAsync(packageName, engine);
-            }
-            else
-            {
-                bundleVersion = await UpdateBundleAsync(packageName, engine);
-            }
-
-            await UploadParametersBundleAsync(bundleVersion, zipPath);
-
-            bundleVersion.UploadParameters = null;
-            return bundleVersion;
-            //var appBundle = new DesignAutoBundleModel();
-            //appBundle.Id = bundleId;
-            //appBundle.Engine = engine;
-            //appBundle.Version = (int)bundleVersion.Version;
-
-            //return appBundle;
-        }
-
-        private async Task UploadParametersBundleAsync(AppBundle bundleVersion, string zipPath)
-        {
-            await RequestService.UploadFormDataAsync(
-                bundleVersion.UploadParameters.EndpointURL,
-                bundleVersion.UploadParameters.FormData,
-                zipPath);
-        }
-
-        private async Task<AppBundle> UpdateBundleAsync(string packageName, string engine)
-        {
-            var bundle = new AppBundle();
-            bundle.Engine = engine;
-            bundle.Description = $"AppBundle: {packageName}";
-
-            var bundleVersion = await designAutomationClient.CreateAppBundleVersionAsync(packageName, bundle);
-            if (bundleVersion == null)
-            {
-                throw new Exception("Error trying to update existing bundle version");
-            }
-
-            var alias = new AliasPatch();
-            alias.Version = (int)bundleVersion.Version;
-
-            await this.designAutomationClient.ModifyAppBundleAliasAsync(packageName, this.forgeEnvironment, alias);
-            return bundleVersion;
-        }
-
-        private async Task<AppBundle> CreateNewBundleAsync(string packageName, string engine)
-        {
-            var bundle = new AppBundle();
-            bundle.Package = packageName;
-            bundle.Engine = engine;
-            bundle.Id = packageName;
-            bundle.Description = $"AppBundle: {packageName}";
-
-            var bundleVersion = await this.designAutomationClient.CreateAppBundleAsync(bundle);
-            if (bundleVersion == null)
-            {
-                throw new Exception("Error trying to create new first bundle version");
-            }
-
-            var alias = new Alias();
-            alias.Id = this.forgeEnvironment;
-            alias.Version = 1;
-            await designAutomationClient.CreateAppBundleAliasAsync(packageName, alias);
-            return bundleVersion;
-        }
-
         public async Task DeleteAppBundleAsync(string appName)
         {
             var bundleName = this.GetBundleName(appName);
             await this.designAutomationClient.DeleteAppBundleAsync(bundleName);
         }
+
+        public async Task DeleteAppBundleAliasAsync(string appName, string aliasId = null)
+        {
+            if (string.IsNullOrWhiteSpace(aliasId))
+                aliasId = this.forgeEnvironment;
+
+            var bundleName = this.GetBundleName(appName);
+            await this.designAutomationClient.DeleteAppBundleAliasAsync(bundleName, aliasId);
+        }
+
+        public async Task<AppBundle> CreateAppBundleAsync(string appName, string packagePath, string engine = null)
+        {
+            if (engine is null)
+            {
+                var engineData = await GetEngineAsync(CoreEngine());
+                if (engineData is null)
+                {
+                    throw new Exception($"Engine '{CoreEngine()}' not found!");
+                }
+                engine = engineData.Id;
+            }
+
+            string packageName = this.GetBundleName(appName);
+            if (!File.Exists(packagePath))
+            {
+                throw new FileNotFoundException($"Bundle {packagePath} not found!");
+            }
+
+            // Check for prev versions of app bundle
+            AppBundle bundle = new AppBundle();
+            bundle.Package = packageName;
+            bundle.Engine = engine;
+            bundle.Id = packageName;
+            bundle.Description = $"AppBundle: {packageName}";
+
+            string bundleId = GetQualifiedId(packageName, false);
+            var bundles = await this.GetAllBundlesAsync(false);
+            if (!bundles.Any(e => e.StartsWith(bundleId)))
+            {
+                await this.designAutomationClient.CreateAppBundleAsync(bundle, this.forgeEnvironment, packagePath);
+                bundle.Version = 1;
+            }
+            else
+            {
+                var version = await this.designAutomationClient.UpdateAppBundleAsync(bundle, this.forgeEnvironment, packagePath);
+                bundle.Version = version;
+            }
+
+            bundle.UploadParameters = null;
+            return bundle;
+        }
         #endregion
 
+        #region BundleVersion
+        public async Task<IEnumerable<int>> GetAppBundleVersionsAsync(string appName)
+        {
+            var bundleName = this.GetBundleName(appName);
+
+            var versions = await designAutomationClient.GetAppBundleVersionsAsync(bundleName);
+
+            var data = versions.Data;
+
+            var paginationToken = versions.PaginationToken;
+            while (!string.IsNullOrEmpty(paginationToken))
+            {
+                versions = await this.designAutomationClient.GetAppBundleVersionsAsync(bundleName, paginationToken);
+                paginationToken = versions.PaginationToken;
+                data.AddRange(versions.Data);
+            }
+
+            return data.OrderBy(e => e);
+        }
+
+        public async Task DeleteAppBundleVersionAsync(string appName, int version)
+        {
+            var bundleName = this.GetBundleName(appName);
+            await designAutomationClient.DeleteAppBundleVersionAsync(bundleName, version);
+        }
+
+        public async Task<IEnumerable<int>> DeleteNotUsedAppBundleVersionsAsync(string appName)
+        {
+            var versions = await GetAppBundleVersionsAsync(appName);
+            var data = new List<int>();
+            foreach (var version in versions)
+            {
+                try
+                {
+                    await DeleteAppBundleVersionAsync(appName, version);
+                    data.Add(version);
+                }
+                catch { }
+            }
+            return data;
+        }
+
+        #endregion
 
         #region Account
         public string GetNickname()
@@ -216,39 +220,34 @@ namespace DesignAutomationConsole.Services
         #region Engine
         public async Task<IEnumerable<string>> GetEnginesAsync()
         {
-            var engines = await designAutomationClient.GetEnginesAsync();
-
-            var data = engines.Data;
-
-            var paginationToken = engines.PaginationToken;
-            while (!string.IsNullOrEmpty(paginationToken))
+            var engines = await GetAllItems(designAutomationClient.GetEnginesAsync);
+            return engines.OrderBy(e => e);
+        }
+        public async Task<Engine> GetEngineAsync(string startWith)
+        {
+            var engines = await GetEnginesAsync();
+            var engineId = engines.FirstOrDefault(e => e.StartsWith(startWith));
+            if (engineId is not null)
             {
-                engines = await this.designAutomationClient.GetEnginesAsync(paginationToken);
-                paginationToken = engines.PaginationToken;
-                data.AddRange(engines.Data);
+                return await this.designAutomationClient.GetEngineAsync(engineId);
             }
-
-            return data.OrderBy(e => e);
+            return null;
         }
         #endregion
 
-        #region BundleVersion
-
-        public async Task<IEnumerable<int>> GetAppBundleVersionsAsync(string id)
+        #region Utils
+        public async Task<List<T>> GetAllItems<T>(Func<string, Task<Page<T>>> pageGetter)
         {
-            var versions = await designAutomationClient.GetAppBundleVersionsAsync(id);
-
-            var data = versions.Data;
-
-            var paginationToken = versions.PaginationToken;
-            while (!string.IsNullOrEmpty(paginationToken))
+            var ret = new List<T>();
+            string paginationToken = null;
+            do
             {
-                versions = await this.designAutomationClient.GetAppBundleVersionsAsync(id, paginationToken);
-                paginationToken = versions.PaginationToken;
-                data.AddRange(versions.Data);
+                var resp = await pageGetter(paginationToken);
+                paginationToken = resp.PaginationToken;
+                ret.AddRange(resp.Data);
             }
-
-            return data.OrderBy(e => e);
+            while (paginationToken != null);
+            return ret;
         }
         #endregion
     }

@@ -14,6 +14,12 @@
 //    }
 //}
 
+
+// Bundle
+// Activite2021 -> Bundle
+// Activite2020 -> Bundle
+// WorkItem -> Activete2021
+
 using Autodesk.Forge.Core;
 using DesignAutomationConsole.Services;
 using System;
@@ -22,6 +28,7 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole
 {
+
     public class Program
     {
         private const string RequestUri =
@@ -29,7 +36,7 @@ namespace DesignAutomationConsole
 
         public static async Task Main(string[] args)
         {
-            Console.WriteLine("Main");
+            Console.WriteLine("...");
             var ForgeConfiguration = new ForgeConfiguration()
             {
                 ClientId = Environment.GetEnvironmentVariable("FORGE_CLIENT_ID"),
@@ -38,64 +45,78 @@ namespace DesignAutomationConsole
 
             var designAutomationService = new DesignAutomationService(ForgeConfiguration);
 
-            var name = await designAutomationService.GetNicknameAsync();
-            Console.WriteLine(name);
+            //var name = await designAutomationService.GetNicknameAsync();
+            //Console.WriteLine(name);
 
             //
 
+
+
             //Console.WriteLine();
 
-            //var engines = await designAutomationService.GetEnginesAsync();
-            //foreach (var engine in engines)
-            //{
-            //    Console.WriteLine(engine);
-            //}
+            var engines = await designAutomationService.GetEnginesAsync();
+            foreach (var engine in engines)
+            {
+                Console.WriteLine(engine);
+            }
 
             var filePath = await RequestService.GetFileAsync(RequestUri);
             var appName = "RevitAddin_DA_Tester";
-            var engine = "Autodesk.Revit+2018";
+
+
+            //var engineData = await designAutomationService.GetEngineAsync("Autodesk.Revit");
+            //Console.WriteLine(engineData);
+
 
             //await designAutomationService.DeleteAppBundleAsync(appName);
 
-            try
+
+            for (int i = 0; i < 1; i++)
             {
+                var appBundle = await designAutomationService.CreateAppBundleAsync(
+                    appName,
+                    filePath);
 
-                for (int i = 0; i < 50; i++)
-                {
-                    var appBundle = await designAutomationService.CreateAppBundleAsync(
-                        appName,
-                        filePath,
-                        engine);
+                Console.WriteLine(appBundle);
 
-                    Console.WriteLine(appBundle);
-                }
+                var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync(appName);
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
+                Console.WriteLine($"Deleted old versions: {string.Join(" ", deleted)}");
             }
 
-            //var versions = await designAutomationService.DesignAutomationClient.GetAppBundleVersionsAsync(appName);
-            //foreach (var version in versions.Data)
-            //{
-            //    Console.WriteLine($"\t {version}");
-            //}
 
+            Console.WriteLine("-------------");
 
             var bundlesNames = await designAutomationService.GetAllBundlesAsync();
             foreach (var bundlesName in bundlesNames)
             {
-                var id = GetName(bundlesName);
                 Console.WriteLine(bundlesName);
-                Console.WriteLine(id);
-                var versions = await designAutomationService.GetAppBundleVersionsAsync(id);
-
-                foreach (var version in versions)
-                {
-                    Console.WriteLine($"\t {version}");
-                }
             }
+
+            Console.WriteLine("-------------");
+
+            var versions = await designAutomationService.GetAppBundleVersionsAsync(appName);
+            foreach (var version in versions)
+            {
+                Console.WriteLine($"{appName}\t {version}");
+            }
+
+            //await designAutomationService.DeleteOldAppBundleVersionsAsync(appName);
+
+
+            //var bundlesNames = await designAutomationService.GetAllBundlesAsync();
+            //foreach (var bundlesName in bundlesNames)
+            //{
+            //    var id = GetName(bundlesName);
+            //    Console.WriteLine(bundlesName);
+            //    Console.WriteLine(id);
+            //    var versions = await designAutomationService.GetAppBundleVersionsAsync(id);
+
+            //    foreach (var version in versions)
+            //    {
+            //        Console.WriteLine($"\t {version}");
+            //    }
+            //}
 
         }
 
