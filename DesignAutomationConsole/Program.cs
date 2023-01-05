@@ -16,9 +16,8 @@
 
 
 // Bundle
-// Activite2021 -> Bundle
-// Activite2020 -> Bundle
-// WorkItem -> Activete2021
+// 2018Activity -> Bundle
+// 2018WorkItem -> 2018Activity
 
 using Autodesk.Forge.Core;
 using DesignAutomationConsole.Services;
@@ -43,7 +42,59 @@ namespace DesignAutomationConsole
                 ClientSecret = Environment.GetEnvironmentVariable("FORGE_CLIENT_SECRET")
             };
 
-            var designAutomationService = new DesignAutomationService(ForgeConfiguration);
+            var designAutomationService = new DesignAutomationService(ForgeConfiguration, "test");
+            var appName = "RevitAddin_DA_Tester";
+            await CreateBundles(designAutomationService, appName);
+            await CreateActivities(designAutomationService, appName);
+            await CreateWorkItem(designAutomationService, appName);
+        }
+
+        private static async Task CreateWorkItem(
+            DesignAutomationService designAutomationService,
+            string appName)
+        {
+            await designAutomationService.SendWorkItemAndGetResponse(appName);
+        }
+
+        private static async Task CreateActivities(
+        DesignAutomationService designAutomationService,
+        string appName)
+        {
+            for (int i = 0; i < 1; i++)
+            {
+                try
+                {
+                    var activity = await designAutomationService.CreateActivityAsync(appName);
+                    Console.WriteLine($"Created {activity.Id} {activity.Version}");
+                    Console.WriteLine(activity);
+                }
+                catch (Exception)
+                {
+                    break;
+                }
+            }
+
+
+            var versions = await designAutomationService.GetActivityVersionsAsync(appName);
+            foreach (var version in versions)
+            {
+                Console.WriteLine($"Activity {appName} - {version}");
+            }
+
+            var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(appName);
+            Console.WriteLine($"Deleted old versions: {string.Join(" ", deleted)}");
+
+            var activities = await designAutomationService.GetAllActivitiesAsync();
+            foreach (var item in activities.Where(e => e.Contains(appName)))
+            {
+                Console.WriteLine(item);
+            }
+        }
+
+        private static async Task CreateBundles(
+            DesignAutomationService designAutomationService,
+            string appName)
+        {
 
             //var name = await designAutomationService.GetNicknameAsync();
             //Console.WriteLine(name);
@@ -54,14 +105,14 @@ namespace DesignAutomationConsole
 
             //Console.WriteLine();
 
-            var engines = await designAutomationService.GetEnginesAsync();
-            foreach (var engine in engines)
-            {
-                Console.WriteLine(engine);
-            }
+            //var engines = await designAutomationService.GetEnginesAsync();
+            //foreach (var engine in engines)
+            //{
+            //    Console.WriteLine(engine);
+            //}
 
             var filePath = await RequestService.GetFileAsync(RequestUri);
-            var appName = "RevitAddin_DA_Tester";
+
 
 
             //var engineData = await designAutomationService.GetEngineAsync("Autodesk.Revit");
@@ -78,12 +129,10 @@ namespace DesignAutomationConsole
                     filePath);
 
                 Console.WriteLine(appBundle);
-
-                var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync(appName);
-
-                Console.WriteLine($"Deleted old versions: {string.Join(" ", deleted)}");
             }
 
+            var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync(appName);
+            Console.WriteLine($"Deleted old versions: {string.Join(" ", deleted)}");
 
             Console.WriteLine("-------------");
 

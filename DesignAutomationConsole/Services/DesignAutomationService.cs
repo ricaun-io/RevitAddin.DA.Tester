@@ -2,6 +2,7 @@
 using Autodesk.Forge.DesignAutomation;
 using Autodesk.Forge.DesignAutomation.Model;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,6 +14,9 @@ namespace DesignAutomationConsole.Services
 {
     public class DesignAutomationService
     {
+        private const string INPUT_PARAM = "input";
+        private const string OUTPUT_PARAM = "output";
+
         private readonly string forgeEnvironment;
         private readonly DesignAutomationClient designAutomationClient;
         public DesignAutomationClient DesignAutomationClient => designAutomationClient;
@@ -59,6 +63,8 @@ namespace DesignAutomationConsole.Services
             var qualifiedId = $"{name}.{packageName}";
             if (enviromentEnable)
                 qualifiedId += $"+{enviroment}";
+            else
+                qualifiedId += $"+{LATEST}";
 
             return qualifiedId;
         }
@@ -81,10 +87,28 @@ namespace DesignAutomationConsole.Services
         }
         #endregion
 
+        #region DefaultEngine
+        private string DefaultEngine { get; set; }
+        private string GetDefaultEngine()
+        {
+            if (DefaultEngine is null)
+            {
+                var engine = Task.Run(() => GetEngineAsync(CoreEngine())).GetAwaiter().GetResult();
+                if (engine is null)
+                {
+                    throw new Exception($"Engine '{CoreEngine()}' not found!");
+                }
+                DefaultEngine = engine.Id;
+            }
+            return DefaultEngine;
+        }
+
+        #endregion
+
         #region Bundle
         public async Task<IEnumerable<string>> GetAllBundlesAsync(bool account = true)
         {
-            var data = await GetAllItems(this.designAutomationClient.GetAppBundlesAsync);
+            var data = await PageUtils.GetAllItems(this.designAutomationClient.GetAppBundlesAsync);
             if (account)
             {
                 var user = await this.GetNicknameAsync();
@@ -112,15 +136,7 @@ namespace DesignAutomationConsole.Services
 
         public async Task<AppBundle> CreateAppBundleAsync(string appName, string packagePath, string engine = null)
         {
-            if (engine is null)
-            {
-                var engineData = await GetEngineAsync(CoreEngine());
-                if (engineData is null)
-                {
-                    throw new Exception($"Engine '{CoreEngine()}' not found!");
-                }
-                engine = engineData.Id;
-            }
+            engine = engine ?? GetDefaultEngine();
 
             string packageName = this.GetBundleName(appName);
             if (!File.Exists(packagePath))
@@ -128,16 +144,12 @@ namespace DesignAutomationConsole.Services
                 throw new FileNotFoundException($"Bundle {packagePath} not found!");
             }
 
-            // Check for prev versions of app bundle
-            AppBundle bundle = new AppBundle();
-            bundle.Package = packageName;
-            bundle.Engine = engine;
-            bundle.Id = packageName;
-            bundle.Description = $"AppBundle: {packageName}";
+            AppBundle bundle = CreateAppBundle(appName, engine);
 
             string bundleId = GetQualifiedId(packageName, false);
             var bundles = await this.GetAllBundlesAsync(false);
-            if (!bundles.Any(e => e.StartsWith(bundleId)))
+
+            if (!bundles.Contains(bundleId))
             {
                 await this.designAutomationClient.CreateAppBundleAsync(bundle, this.forgeEnvironment, packagePath);
                 bundle.Version = 1;
@@ -151,25 +163,28 @@ namespace DesignAutomationConsole.Services
             bundle.UploadParameters = null;
             return bundle;
         }
+
+        private AppBundle CreateAppBundle(string appName, string engine)
+        {
+            string packageName = this.GetBundleName(appName);
+
+            AppBundle bundle = new AppBundle();
+            bundle.Package = packageName;
+            bundle.Engine = engine;
+            bundle.Id = packageName;
+            bundle.Description = $"AppBundle: {packageName}";
+
+            return bundle;
+        }
         #endregion
 
         #region BundleVersion
+
         public async Task<IEnumerable<int>> GetAppBundleVersionsAsync(string appName)
         {
             var bundleName = this.GetBundleName(appName);
 
-            var versions = await designAutomationClient.GetAppBundleVersionsAsync(bundleName);
-
-            var data = versions.Data;
-
-            var paginationToken = versions.PaginationToken;
-            while (!string.IsNullOrEmpty(paginationToken))
-            {
-                versions = await this.designAutomationClient.GetAppBundleVersionsAsync(bundleName, paginationToken);
-                paginationToken = versions.PaginationToken;
-                data.AddRange(versions.Data);
-            }
-
+            var data = await PageUtils.GetAllItems(this.designAutomationClient.GetAppBundleVersionsAsync, bundleName);
             return data.OrderBy(e => e);
         }
 
@@ -197,6 +212,276 @@ namespace DesignAutomationConsole.Services
 
         #endregion
 
+
+        #region Activity
+
+        public async Task DeleteActivity(string appName)
+        {
+            var activityName = this.GetActivityName(appName);
+            await this.designAutomationClient.DeleteActivityAsync(activityName);
+        }
+
+        public async Task<IEnumerable<string>> GetAllActivitiesAsync(bool account = true)
+        {
+            var data = await PageUtils.GetAllItems(designAutomationClient.GetActivitiesAsync);
+
+            if (account)
+            {
+                var user = await this.GetNicknameAsync();
+                return data
+                    .Where(e => e.StartsWith(user))
+                    .Where(e => !e.EndsWith(LATEST));
+            }
+
+            return data.OrderBy(e => e);
+        }
+
+        public async Task<Activity> CreateActivityAsync(string appName, string engine = null)
+        {
+            engine = engine ?? GetDefaultEngine();
+
+            string activityName = this.GetActivityName(appName, engine);
+            Activity activity = CreateActivity(appName, engine);
+
+            var activities = await GetAllActivitiesAsync(false);
+            string qualifiedId = GetQualifiedId(activityName, false);
+            if (!activities.Contains(qualifiedId))
+            {
+                await this.designAutomationClient.CreateActivityAsync(activity, this.forgeEnvironment);
+                activity.Version = 1;
+            }
+            else
+            {
+                var version = await this.designAutomationClient.UpdateActivityAsync(activity, this.forgeEnvironment);
+                activity.Version = version;
+            }
+            return activity;
+        }
+
+        private async Task<Activity> CreateNewActivityAsync(string appName, string engine)
+        {
+            string activityName = this.GetActivityName(appName, engine);
+            Activity activity = this.CreateActivity(appName, engine);
+
+            activity = await designAutomationClient.CreateActivityAsync(activity);
+
+            var alias = new Alias();
+            alias.Id = this.forgeEnvironment;
+            alias.Version = 1;
+
+            await designAutomationClient.CreateActivityAliasAsync(activityName, alias);
+
+            return activity;
+        }
+
+        private async Task<Activity> UpdateActivityAsync(string appName, string engine)
+        {
+            string activityName = this.GetActivityName(appName, engine);
+            Activity activity = this.CreateActivity(appName, engine);
+
+            // Set Id = null to Update Version
+            activity.Id = null;
+
+            activity = await designAutomationClient.CreateActivityVersionAsync(activityName, activity);
+            if (activity == null)
+            {
+                throw new Exception("Error trying to update existing activity version");
+            }
+
+            var alias = new AliasPatch();
+            alias.Version = (int)activity.Version;
+
+            await this.designAutomationClient.ModifyActivityAliasAsync(activityName, this.forgeEnvironment, alias);
+
+            return activity;
+        }
+
+        private Activity CreateActivity(string appName, string engine)
+        {
+            var bundleName = this.GetBundleName(appName);
+            var activityName = this.GetActivityName(appName, engine);
+            var bundleId = GetQualifiedId(bundleName);
+
+            var commandInput = "";
+            //commandInput = $"/i \"$(args[{FILE_PARAM}].path)\"";
+
+            var commandLine = $"$(engine.path)\\{CoreConsoleExe()} {commandInput} /al \"$(appbundles[{bundleName}].path)\"";
+            var script = string.Empty;
+
+            var inputParam = new Parameter();
+            inputParam.Description = "The input json.";
+            inputParam.LocalName = $"{INPUT_PARAM}.json";
+            inputParam.Verb = Verb.Get;
+
+            var outputParam = new Parameter();
+            outputParam.Description = "The output json.";
+            outputParam.LocalName = $"{OUTPUT_PARAM}.json";
+            outputParam.Verb = Verb.Put;
+
+            var activity = new Activity();
+            activity.Id = activityName;
+            activity.Description = $"Activity {appName}";
+            activity.Appbundles = new List<string>() { bundleId };
+            activity.CommandLine = new List<string>() { commandLine };
+            activity.Engine = engine;
+            activity.Settings = new Dictionary<string, ISetting>()
+            {
+                { "script", new StringSetting() { Value = script } }
+            };
+            activity.Parameters = new Dictionary<string, Parameter>()
+            {
+                { INPUT_PARAM, inputParam },
+                //{ OUTPUT_PARAM, outputParam },
+            };
+            return activity;
+        }
+        #endregion
+
+        #region ActivityVersion
+
+        public async Task<IEnumerable<int>> GetActivityVersionsAsync(string appName, string engine = null)
+        {
+            engine = engine ?? GetDefaultEngine();
+            var activityName = this.GetActivityName(appName, engine);
+
+            var data = await PageUtils.GetAllItems(this.designAutomationClient.GetActivityVersionsAsync, activityName);
+            return data.OrderBy(e => e);
+        }
+        public async Task DeleteActivityVersionAsync(string appName, int version, string engine = null)
+        {
+            engine = engine ?? GetDefaultEngine();
+            var activityName = this.GetActivityName(appName, engine);
+            await designAutomationClient.DeleteActivityVersionAsync(activityName, version);
+        }
+
+        public async Task<IEnumerable<int>> DeleteNotUsedActivityVersionsAsync(string appName, string engine = null)
+        {
+            var versions = await GetActivityVersionsAsync(appName, engine);
+            var data = new List<int>();
+            foreach (var version in versions)
+            {
+                try
+                {
+                    await DeleteActivityVersionAsync(appName, version, engine);
+                    data.Add(version);
+                }
+                catch { }
+            }
+            return data;
+        }
+
+        #endregion
+
+
+        #region WorkItem
+
+        public async Task DeleteWorkItem(string id)
+        {
+            await this.designAutomationClient.DeleteWorkItemAsync(id);
+        }
+
+        public async Task<WorkItemStatus> CreateWorkItemAsync(string appName, string engine,
+            string inputJson, string outputUrl)
+        {
+            engine = engine ?? GetDefaultEngine();
+
+            string activityName = this.GetActivityName(appName, engine);
+            string activityId = this.GetQualifiedId(activityName);
+
+            var workItemBundle = new WorkItem();
+            workItemBundle.ActivityId = activityId;
+
+            workItemBundle.Arguments = new Dictionary<string, IArgument>()
+            {
+                { INPUT_PARAM, ToJsonArgument(inputJson) },
+                //{ OUTPUT_PARAM,  ToCallbackArgument(outputUrl) },
+            };
+
+            var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
+
+            return status;
+        }
+
+        #region Argument
+        protected IArgument ToJsonArgument(string json)
+        {
+            var argument = new XrefTreeArgument();
+            argument.Url = $"data:application/json,{json}";
+            argument.Verb = Verb.Get;
+            return argument;
+        }
+
+        protected IArgument ToJsonArgument<T>(T value)
+        {
+            var json = JsonConvert.SerializeObject(value);
+            var argument = new XrefTreeArgument();
+            argument.Url = $"data:application/json,{json}";
+            argument.Verb = Verb.Get;
+            return argument;
+        }
+
+        protected IArgument ToFileArgument(string filePathUrl)
+        {
+            var argument = new XrefTreeArgument();
+            argument.Url = filePathUrl;
+            return argument;
+        }
+
+        protected IArgument ToCallbackArgument(string callback, Verb verb = Verb.Put)
+        {
+            var argument = new XrefTreeArgument();
+            argument.Url = callback;
+            argument.Verb = verb;
+            return argument;
+        }
+
+        #endregion
+
+        public async Task<WorkItemStatus> CheckWorkItemAsync(string id)
+        {
+            var status = await this.designAutomationClient.GetWorkitemStatusAsync(id);
+            status.ProgressEstimateCosts();
+            return status;
+        }
+
+        public async Task<object> CheckWorkItemReportAsync(string id)
+        {
+            var status = await CheckWorkItemAsync(id);
+            if (status.ReportUrl is not null)
+            {
+                var report = $"{status.Progress}{Environment.NewLine}";
+                using (HttpClient client = new HttpClient())
+                {
+                    report += await client.GetStringAsync(status.ReportUrl);
+                }
+                return report;
+            }
+            return status;
+        }
+
+        public async Task<object> SendWorkItemAndGetResponse(string appName)
+        {
+            var status = await this.CreateWorkItemAsync(appName, null, "{}", "");
+
+            var number = 0;
+            while (status.Status == Status.Pending | status.Status == Status.Inprogress)
+            {
+                Console.WriteLine(status);
+                if (number++ > 120) break;
+                await Task.Delay(5000);
+                status = await this.CheckWorkItemAsync(status.Id);
+            }
+
+            //if (status.Status == Status.Success)
+            //    return await RequestService.GetStringAsync(callbackUrl);
+            Console.WriteLine(status);
+            Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
+            return status;
+        }
+
+
+        #endregion
+
         #region Account
         public string GetNickname()
         {
@@ -220,7 +505,7 @@ namespace DesignAutomationConsole.Services
         #region Engine
         public async Task<IEnumerable<string>> GetEnginesAsync()
         {
-            var engines = await GetAllItems(designAutomationClient.GetEnginesAsync);
+            var engines = await PageUtils.GetAllItems(designAutomationClient.GetEnginesAsync);
             return engines.OrderBy(e => e);
         }
         public async Task<Engine> GetEngineAsync(string startWith)
@@ -232,22 +517,6 @@ namespace DesignAutomationConsole.Services
                 return await this.designAutomationClient.GetEngineAsync(engineId);
             }
             return null;
-        }
-        #endregion
-
-        #region Utils
-        public async Task<List<T>> GetAllItems<T>(Func<string, Task<Page<T>>> pageGetter)
-        {
-            var ret = new List<T>();
-            string paginationToken = null;
-            do
-            {
-                var resp = await pageGetter(paginationToken);
-                paginationToken = resp.PaginationToken;
-                ret.AddRange(resp.Data);
-            }
-            while (paginationToken != null);
-            return ret;
         }
         #endregion
     }
