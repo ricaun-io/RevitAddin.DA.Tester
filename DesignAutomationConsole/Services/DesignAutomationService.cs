@@ -474,7 +474,9 @@ namespace DesignAutomationConsole.Services
 
         public async Task<object> SendWorkItemAndGetResponse(string appName)
         {
-            var status = await this.CreateWorkItemAsync(appName, null, "{}", "");
+            var input = """{"Text": "Hello Revit."}""";
+
+            var status = await this.CreateWorkItemAsync(appName, null, input, "");
 
             var number = 0;
             while (status.Status == Status.Pending | status.Status == Status.Inprogress)

@@ -36,11 +36,11 @@ namespace DesignAutomationConsole
         public static async Task Main(string[] args)
         {
             Console.WriteLine("...");
-            var ForgeConfiguration = new ForgeConfiguration()
-            {
-                ClientId = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_ID"),
-                ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
-            };
+            //var ForgeConfiguration = new ForgeConfiguration()
+            //{
+            //    ClientId = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_ID"),
+            //    ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
+            //};
 
             var designAutomationService = new DesignAutomationService();
 
