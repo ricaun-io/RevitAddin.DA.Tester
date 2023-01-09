@@ -42,17 +42,17 @@ namespace DesignAutomationConsole
                 ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
             };
 
-            var designAutomationService = new DesignAutomationService(ForgeConfiguration);
+            var designAutomationService = new DesignAutomationService();
 
             var name = designAutomationService.GetNickname();
             Console.WriteLine($"Nickname: {name}");
 
             //await designAutomationService.CreateNicknameAsync("ricaun.io");
 
-            //var appName = "RevitAddin_DA_Tester";
-            //await CreateBundles(designAutomationService, appName);
-            //await CreateActivities(designAutomationService, appName);
-            //await CreateWorkItem(designAutomationService, appName);
+            var appName = "RevitAddin_DA_Tester";
+            await CreateBundles(designAutomationService, appName);
+            await CreateActivities(designAutomationService, appName);
+            await CreateWorkItem(designAutomationService, appName);
         }
 
         private static async Task CreateWorkItem(

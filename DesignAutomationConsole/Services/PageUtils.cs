@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
+    /// <summary>
+    /// PageUtils
+    /// </summary>
     public static class PageUtils
     {
         /// <summary>

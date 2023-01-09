@@ -337,10 +337,10 @@ namespace DesignAutomationConsole.Services
             activity.Appbundles = new List<string>() { bundleId };
             activity.CommandLine = new List<string>() { commandLine };
             activity.Engine = engine;
-            activity.Settings = new Dictionary<string, ISetting>()
-            {
-                { "script", new StringSetting() { Value = script } }
-            };
+            //activity.Settings = new Dictionary<string, ISetting>()
+            //{
+            //    { "script", new StringSetting() { Value = script } }
+            //};
             activity.Parameters = new Dictionary<string, Parameter>()
             {
                 { INPUT_PARAM, inputParam },
