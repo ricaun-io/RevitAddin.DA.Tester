@@ -59,10 +59,10 @@ namespace DesignAutomationConsole.Services
         }
 
         /// <summary>
-        /// Stream
+        /// Asynchronously retrieves a stream from the specified request URI.
         /// </summary>
-        /// <param name="requestUri"></param>
-        /// <returns></returns>
+        /// <param name="requestUri">The URI from which to retrieve the stream.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the stream retrieved from the request URI.</returns>
         public async static Task<Stream> GetStreamAsync(string requestUri)
         {
             using (HttpClient client = new HttpClient())
@@ -72,12 +72,11 @@ namespace DesignAutomationConsole.Services
         }
 
         /// <summary>
-        /// Post FormData with File
+        /// Asynchronously uploads form data to the specified request URI.
         /// </summary>
-        /// <param name="requestUri"></param>
-        /// <param name="formData"></param>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
+        /// <param name="requestUri">The URI to which the form data will be sent.</param>
+        /// <param name="formData">A dictionary containing the form data to send. The key is the name of the form field and the value is the field value.</param>
+        /// <param name="filePath">The file path of the file to include in the form data.</param>
         public async static Task UploadFormDataAsync(string requestUri, Dictionary<string, string> formData, string filePath)
         {
             using (HttpClient client = new HttpClient())

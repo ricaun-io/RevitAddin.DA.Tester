@@ -9,22 +9,22 @@ namespace DesignAutomationConsole.Services
     public static class ForgeDAExtension
     {
         /// <summary>
-        /// ProgressEstimateCosts
+        /// Estimate the costs of a <see cref="WorkItemStatus"/> and update the <see cref="WorkItemStatus.Progress"/> property with the result.
         /// </summary>
-        /// <param name="workItemStatus"></param>
-        /// <returns></returns>
+        /// <param name="workItemStatus">The work item status to estimate costs for and update.</param>
+        /// <returns>The updated <paramref name="workItemStatus"/> with the estimated costs included in the <see cref="WorkItemStatus.Progress"/> property.</returns>
         public static WorkItemStatus ProgressEstimateCosts(this WorkItemStatus workItemStatus)
         {
             workItemStatus.Progress = $"EstimateCosts: {workItemStatus.EstimateCosts()}";
             return workItemStatus;
         }
 
-
         /// <summary>
-        /// EstimateCosts
+        /// Estimate the costs of a <see cref="WorkItemStatus"/> using the provided cost multiplier.
         /// </summary>
-        /// <param name="workItemStatus"></param>
-        /// <returns></returns>
+        /// <param name="workItemStatus">The work item status to estimate costs for.</param>
+        /// <param name="costMultiplier">A multiplier to apply to the calculated costs. The default value is 2.0.</param>
+        /// <returns>The estimated costs for the <paramref name="workItemStatus"/>.</returns>
         public static double EstimateCosts(this WorkItemStatus workItemStatus, double costMultiplier = 2.0)
         {
             var costs = 0.0;

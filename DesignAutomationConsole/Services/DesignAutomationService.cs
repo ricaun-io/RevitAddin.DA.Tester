@@ -25,7 +25,15 @@ namespace DesignAutomationConsole.Services
             ForgeConfiguration forgeConfiguration = null,
             string forgeEnvironment = "dev")
         {
+            forgeConfiguration = forgeConfiguration ?? new ForgeConfiguration();
+
+            if (string.IsNullOrWhiteSpace(forgeConfiguration.ClientId)) 
+                forgeConfiguration.ClientId = Environment.GetEnvironmentVariable("FORGE_CLIENT_ID");
+            if (string.IsNullOrWhiteSpace(forgeConfiguration.ClientSecret)) 
+                forgeConfiguration.ClientSecret = Environment.GetEnvironmentVariable("FORGE_CLIENT_SECRET");
+
             var service = GetForgeService(forgeConfiguration);
+
             this.forgeEnvironment = forgeEnvironment;
             this.designAutomationClient = new DesignAutomationClient(service);
         }
@@ -41,7 +49,6 @@ namespace DesignAutomationConsole.Services
             );
         }
         #endregion
-
 
         #region Names
         private const string LATEST = "$LATEST";
@@ -164,6 +171,12 @@ namespace DesignAutomationConsole.Services
             return bundle;
         }
 
+        /// <summary>
+        /// Creates an <see cref="AppBundle"/> with the specified name and engine.
+        /// </summary>
+        /// <param name="appName">The name of the app for which the bundle will be created.</param>
+        /// <param name="engine">The engine for which the bundle will be created.</param>
+        /// <returns>An <see cref="AppBundle"/> with the specified name and engine.</returns>
         private AppBundle CreateAppBundle(string appName, string engine)
         {
             string packageName = this.GetBundleName(appName);

@@ -38,15 +38,21 @@ namespace DesignAutomationConsole
             Console.WriteLine("...");
             var ForgeConfiguration = new ForgeConfiguration()
             {
-                ClientId = Environment.GetEnvironmentVariable("FORGE_CLIENT_ID"),
-                ClientSecret = Environment.GetEnvironmentVariable("FORGE_CLIENT_SECRET")
+                ClientId = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_ID"),
+                ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
             };
 
-            var designAutomationService = new DesignAutomationService(ForgeConfiguration, "test");
-            var appName = "RevitAddin_DA_Tester";
-            await CreateBundles(designAutomationService, appName);
-            await CreateActivities(designAutomationService, appName);
-            await CreateWorkItem(designAutomationService, appName);
+            var designAutomationService = new DesignAutomationService(ForgeConfiguration);
+
+            var name = designAutomationService.GetNickname();
+            Console.WriteLine($"Nickname: {name}");
+
+            //await designAutomationService.CreateNicknameAsync("ricaun.io");
+
+            //var appName = "RevitAddin_DA_Tester";
+            //await CreateBundles(designAutomationService, appName);
+            //await CreateActivities(designAutomationService, appName);
+            //await CreateWorkItem(designAutomationService, appName);
         }
 
         private static async Task CreateWorkItem(
@@ -82,7 +88,7 @@ namespace DesignAutomationConsole
             }
 
             var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(appName);
-            Console.WriteLine($"Deleted old versions: {string.Join(" ", deleted)}");
+            Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
 
             var activities = await designAutomationService.GetAllActivitiesAsync();
             foreach (var item in activities.Where(e => e.Contains(appName)))
@@ -132,7 +138,7 @@ namespace DesignAutomationConsole
             }
 
             var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync(appName);
-            Console.WriteLine($"Deleted old versions: {string.Join(" ", deleted)}");
+            Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
 
             Console.WriteLine("-------------");
 
