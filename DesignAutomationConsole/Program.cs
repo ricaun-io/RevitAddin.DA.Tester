@@ -20,6 +20,7 @@
 // 2018WorkItem -> 2018Activity
 
 using Autodesk.Forge.Core;
+using Autodesk.Forge.Oss;
 using DesignAutomationConsole.Services;
 using System;
 using System.Linq;
@@ -30,8 +31,13 @@ namespace DesignAutomationConsole
 
     public class Program
     {
+        private const string RequestUri0 =
+          "https://github.com/ricaun-io/RevitAddin.DA.Tester/releases/download/1.0.0/RevitAddin.DA.Tester.bundle.zip";
+
         private const string RequestUri =
             "https://github.com/ricaun-io/RevitAddin.DA.Tester/releases/latest/download/RevitAddin.DA.Tester.bundle.zip";
+
+        private const string versionEngine = "2018";
 
         public static async Task Main(string[] args)
         {
@@ -47,7 +53,25 @@ namespace DesignAutomationConsole
             var name = designAutomationService.GetNickname();
             Console.WriteLine($"Nickname: {name}");
 
-            //await designAutomationService.CreateNicknameAsync("ricaun.io");
+            var bundlesNames = await designAutomationService.GetAllBundlesAsync();
+            foreach (var bundlesName in bundlesNames)
+            {
+                Console.WriteLine($"Bundle: {bundlesName}");
+            }
+            var activities = await designAutomationService.GetAllActivitiesAsync();
+            foreach (var item in activities)
+            {
+                Console.WriteLine($"Activity: {item}");
+            }
+
+            //var bb = await designAutomationService.OssClient.GetBucketsAsync();
+            //foreach (var item in bb.Items)
+            //{
+            //    Console.WriteLine($"Delete BucketKey: {item.BucketKey}");
+            //    await designAutomationService.OssClient.DeleteBucketAsync(item.BucketKey);
+            //}
+
+            //await designAutomationService.CreateNicknameAsync("ricaun2");
 
             var appName = "RevitAddin_DA_Tester";
             await CreateBundles(designAutomationService, appName);
@@ -59,7 +83,8 @@ namespace DesignAutomationConsole
             DesignAutomationService designAutomationService,
             string appName)
         {
-            await designAutomationService.SendWorkItemAndGetResponse(appName);
+            var input = "{\"Text\": \"Hello World.\"}";
+            await designAutomationService.SendWorkItemAndGetResponse(appName, versionEngine, input);
         }
 
         private static async Task CreateActivities(
@@ -70,7 +95,7 @@ namespace DesignAutomationConsole
             {
                 try
                 {
-                    var activity = await designAutomationService.CreateActivityAsync(appName);
+                    var activity = await designAutomationService.CreateActivityAsync(appName, versionEngine);
                     Console.WriteLine($"Created {activity.Id} {activity.Version}");
                     Console.WriteLine(activity);
                 }
@@ -81,13 +106,13 @@ namespace DesignAutomationConsole
             }
 
 
-            var versions = await designAutomationService.GetActivityVersionsAsync(appName);
+            var versions = await designAutomationService.GetActivityVersionsAsync(appName, versionEngine);
             foreach (var version in versions)
             {
                 Console.WriteLine($"Activity {appName} - {version}");
             }
 
-            var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(appName);
+            var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(appName, versionEngine);
             Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
 
             var activities = await designAutomationService.GetAllActivitiesAsync();
@@ -173,13 +198,6 @@ namespace DesignAutomationConsole
             //    }
             //}
 
-        }
-
-        private static string GetName(string bundlesName)
-        {
-            var splitDot = bundlesName.Split('.');
-            var split = splitDot.LastOrDefault().Split('+');
-            return split[0];
         }
 
     }

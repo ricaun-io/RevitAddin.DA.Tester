@@ -1,6 +1,7 @@
 ﻿using Autodesk.Forge.Core;
 using Autodesk.Forge.DesignAutomation;
 using Autodesk.Forge.DesignAutomation.Model;
+using Autodesk.Forge.Oss;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -19,7 +20,9 @@ namespace DesignAutomationConsole.Services
 
         private readonly string forgeEnvironment;
         private readonly DesignAutomationClient designAutomationClient;
+        private readonly OssClient ossClient;
         public DesignAutomationClient DesignAutomationClient => designAutomationClient;
+        public OssClient OssClient => ossClient;
         #region Constructor
         public DesignAutomationService(
             ForgeConfiguration forgeConfiguration = null,
@@ -36,6 +39,11 @@ namespace DesignAutomationConsole.Services
 
             this.forgeEnvironment = forgeEnvironment;
             this.designAutomationClient = new DesignAutomationClient(service);
+
+            this.ossClient = new OssClient(new Autodesk.Forge.Oss.Configuration() { 
+                ClientId = forgeConfiguration.ClientId,
+                ClientSecret = forgeConfiguration.ClientSecret
+            });
         }
         private ForgeService GetForgeService(ForgeConfiguration forgeConfiguration)
         {
@@ -109,7 +117,12 @@ namespace DesignAutomationConsole.Services
             }
             return DefaultEngine;
         }
+        private string GetDefaultEngine(string engine)
+        {
+            if (engine is null) return GetDefaultEngine();
 
+            return $"{CoreEngine()}+{GetEngineVersion(engine)}";
+        }
         #endregion
 
         #region Bundle
@@ -141,9 +154,9 @@ namespace DesignAutomationConsole.Services
             await this.designAutomationClient.DeleteAppBundleAliasAsync(bundleName, aliasId);
         }
 
-        public async Task<AppBundle> CreateAppBundleAsync(string appName, string packagePath, string engine = null)
+        public async Task<AppBundle> CreateAppBundleAsync(string appName, string packagePath)
         {
-            engine = engine ?? GetDefaultEngine();
+            var engine = GetDefaultEngine();
 
             string packageName = this.GetBundleName(appName);
             if (!File.Exists(packagePath))
@@ -251,7 +264,7 @@ namespace DesignAutomationConsole.Services
 
         public async Task<Activity> CreateActivityAsync(string appName, string engine = null)
         {
-            engine = engine ?? GetDefaultEngine();
+            engine = GetDefaultEngine(engine);
 
             string activityName = this.GetActivityName(appName, engine);
             Activity activity = CreateActivity(appName, engine);
@@ -344,7 +357,7 @@ namespace DesignAutomationConsole.Services
             activity.Parameters = new Dictionary<string, Parameter>()
             {
                 { INPUT_PARAM, inputParam },
-                //{ OUTPUT_PARAM, outputParam },
+                { OUTPUT_PARAM, outputParam },
             };
             return activity;
         }
@@ -354,7 +367,7 @@ namespace DesignAutomationConsole.Services
 
         public async Task<IEnumerable<int>> GetActivityVersionsAsync(string appName, string engine = null)
         {
-            engine = engine ?? GetDefaultEngine();
+            engine = GetDefaultEngine(engine);
             var activityName = this.GetActivityName(appName, engine);
 
             var data = await PageUtils.GetAllItems(this.designAutomationClient.GetActivityVersionsAsync, activityName);
@@ -362,7 +375,7 @@ namespace DesignAutomationConsole.Services
         }
         public async Task DeleteActivityVersionAsync(string appName, int version, string engine = null)
         {
-            engine = engine ?? GetDefaultEngine();
+            engine = GetDefaultEngine(engine);
             var activityName = this.GetActivityName(appName, engine);
             await designAutomationClient.DeleteActivityVersionAsync(activityName, version);
         }
@@ -396,7 +409,7 @@ namespace DesignAutomationConsole.Services
         public async Task<WorkItemStatus> CreateWorkItemAsync(string appName, string engine,
             string inputJson, string outputUrl)
         {
-            engine = engine ?? GetDefaultEngine();
+            engine = GetDefaultEngine(engine);
 
             string activityName = this.GetActivityName(appName, engine);
             string activityId = this.GetQualifiedId(activityName);
@@ -407,7 +420,7 @@ namespace DesignAutomationConsole.Services
             workItemBundle.Arguments = new Dictionary<string, IArgument>()
             {
                 { INPUT_PARAM, ToJsonArgument(inputJson) },
-                //{ OUTPUT_PARAM,  ToCallbackArgument(outputUrl) },
+                { OUTPUT_PARAM,  ToCallbackArgument(outputUrl) },
             };
 
             var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
@@ -463,20 +476,26 @@ namespace DesignAutomationConsole.Services
             if (status.ReportUrl is not null)
             {
                 var report = $"{status.Progress}{Environment.NewLine}";
-                using (HttpClient client = new HttpClient())
-                {
-                    report += await client.GetStringAsync(status.ReportUrl);
-                }
+                report += await RequestService.GetStringAsync(status.ReportUrl);
                 return report;
             }
             return status;
         }
 
-        public async Task<object> SendWorkItemAndGetResponse(string appName)
+        public async Task<object> SendWorkItemAndGetResponse(string appName, string engine, string inputJson)
         {
-            var input = """{"Text": "Hello Revit."}""";
+            //var input = "{\"Text\": \"Hello Youtube.\"}";
+            var nickname = await GetNicknameAsync();
+            var bucketKey = nickname.ToLower()+"_"+ appName.ToLower();
+            var fileName = OUTPUT_PARAM;
+            var bucket = await ossClient.TryGetBucketDetailsAsync(bucketKey);
+            if (bucket is null) bucket = await ossClient.CreateBucketAsync(bucketKey);
 
-            var status = await this.CreateWorkItemAsync(appName, null, input, "");
+            Console.WriteLine($"Bucket: {bucket.BucketKey}");
+
+            var writeSignedUrl = await ossClient.CreateSignedFileWriteAsync(bucketKey, fileName);
+
+            var status = await this.CreateWorkItemAsync(appName, engine, inputJson, writeSignedUrl);
 
             var number = 0;
             while (status.Status == Status.Pending | status.Status == Status.Inprogress)
@@ -491,6 +510,17 @@ namespace DesignAutomationConsole.Services
             //    return await RequestService.GetStringAsync(callbackUrl);
             Console.WriteLine(status);
             Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
+
+            if (status.Status == Status.Success)
+            {
+
+                var readSignedUrl = await ossClient.CreateSignedFileAsync(bucketKey, fileName);
+                await RequestService.GetFileAsync(readSignedUrl, fileName);
+                var output = await RequestService.GetStringAsync(readSignedUrl);
+                Console.WriteLine(output);
+            }
+
+
             return status;
         }
 
