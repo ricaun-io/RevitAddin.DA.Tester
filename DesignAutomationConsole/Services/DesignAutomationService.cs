@@ -495,7 +495,7 @@ namespace DesignAutomationConsole.Services
             //var input = "{\"Text\": \"Hello Youtube.\"}";
             var nickname = await GetNicknameAsync();
             var bucketKey = nickname.ToLower()+"_"+ appName.ToLower();
-            var fileName = OUTPUT_PARAM;
+            var fileName = OUTPUT_PARAM + engine;
             var bucket = await ossClient.TryGetBucketDetailsAsync(bucketKey);
             if (bucket is null) bucket = await ossClient.CreateBucketAsync(bucketKey);
 
@@ -521,7 +521,6 @@ namespace DesignAutomationConsole.Services
 
             if (status.Status == Status.Success)
             {
-
                 var readSignedUrl = await ossClient.CreateSignedFileAsync(bucketKey, fileName);
                 await RequestService.GetFileAsync(readSignedUrl, fileName);
                 var output = await RequestService.GetStringAsync(readSignedUrl);

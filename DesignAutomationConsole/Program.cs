@@ -23,6 +23,7 @@ using Autodesk.Forge.Core;
 using Autodesk.Forge.Oss;
 using DesignAutomationConsole.Services;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -40,7 +41,8 @@ namespace DesignAutomationConsole
         private const string RequestUri =
             "https://github.com/ricaun-io/RevitAddin.DA.Tester/releases/latest/download/RevitAddin.DA.Tester.bundle.zip";
 
-        private const string versionEngine = "2018";
+        private static string versionEngine { get; set; } = "2018";
+        private static string[] versionEngines { get; set; } = new[] { "2018", "2019", "2020", "2021", "2022", "2023" };
 
         public static async Task Main(string[] args)
         {
@@ -86,37 +88,36 @@ namespace DesignAutomationConsole
             DesignAutomationService designAutomationService,
             string appName)
         {
-            var input = "{\"Text\": \"Hello World.\"}";
-            await designAutomationService.SendWorkItemAndGetResponse(appName, versionEngine, input);
+            var tasks = new List<Task>();
+            foreach (var versionEngine in versionEngines)
+            {
+                var input = "{\"Text\": \"Hello World.\"}";
+                var task = designAutomationService.SendWorkItemAndGetResponse(appName, versionEngine, input);
+                tasks.Add(task);
+            }
+            await Task.WhenAll(tasks);
         }
 
         private static async Task CreateActivities(
         DesignAutomationService designAutomationService,
         string appName)
         {
-            for (int i = 0; i < 1; i++)
+            foreach (var versionEngine in versionEngines)
             {
-                try
-                {
-                    var activity = await designAutomationService.CreateActivityAsync(appName, versionEngine);
-                    Console.WriteLine($"Created {activity.Id} {activity.Version}");
-                    Console.WriteLine(activity);
-                }
-                catch (Exception)
-                {
-                    break;
-                }
+
+                var activity = await designAutomationService.CreateActivityAsync(appName, versionEngine);
+                Console.WriteLine($"Created {activity.Id} {activity.Version}");
+                Console.WriteLine(activity);
+
+                //var versions = await designAutomationService.GetActivityVersionsAsync(appName, versionEngine);
+                //foreach (var version in versions)
+                //{
+                //    Console.WriteLine($"Activity {appName} - {version}");
+                //}
+
+                var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(appName, versionEngine);
+                Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
             }
-
-
-            var versions = await designAutomationService.GetActivityVersionsAsync(appName, versionEngine);
-            foreach (var version in versions)
-            {
-                Console.WriteLine($"Activity {appName} - {version}");
-            }
-
-            var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(appName, versionEngine);
-            Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
 
             var activities = await designAutomationService.GetAllActivitiesAsync();
             foreach (var item in activities.Where(e => e.Contains(appName)))
@@ -146,7 +147,7 @@ namespace DesignAutomationConsole
             //}
 
             var filePath = await RequestService.GetFileAsync(RequestUri);
-            
+
 
 
 
