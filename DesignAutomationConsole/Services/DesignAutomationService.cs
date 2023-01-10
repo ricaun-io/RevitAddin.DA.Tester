@@ -126,6 +126,14 @@ namespace DesignAutomationConsole.Services
         #endregion
 
         #region Bundle
+
+        public async Task<AppBundle> GetBundleAsync(string appName)
+        {
+            var bundleName = this.GetBundleName(appName);
+            var qualifiedId = this.GetQualifiedId(bundleName);
+            return await this.designAutomationClient.GetAppBundleAsync(qualifiedId);
+        }
+
         public async Task<IEnumerable<string>> GetAllBundlesAsync(bool account = true)
         {
             var data = await PageUtils.GetAllItems(this.designAutomationClient.GetAppBundlesAsync);

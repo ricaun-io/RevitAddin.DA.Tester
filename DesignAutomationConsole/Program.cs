@@ -23,7 +23,10 @@ using Autodesk.Forge.Core;
 using Autodesk.Forge.Oss;
 using DesignAutomationConsole.Services;
 using System;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DesignAutomationConsole
@@ -143,6 +146,7 @@ namespace DesignAutomationConsole
             //}
 
             var filePath = await RequestService.GetFileAsync(RequestUri);
+            
 
 
 
@@ -181,6 +185,13 @@ namespace DesignAutomationConsole
                 Console.WriteLine($"{appName}\t {version}");
             }
 
+            //Console.WriteLine("-------------");
+            //var app = await designAutomationService.GetBundleAsync(appName);
+            //Console.WriteLine(app);
+            //await RequestService.GetFileAsync(app.Package, "package.zip");
+
+            Console.WriteLine("-------------");
+
             //await designAutomationService.DeleteOldAppBundleVersionsAsync(appName);
 
 
@@ -198,6 +209,17 @@ namespace DesignAutomationConsole
             //    }
             //}
 
+        }
+
+        public static string checkMD5(string filename)
+        {
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(filename))
+                {
+                    return Encoding.Default.GetString(md5.ComputeHash(stream));
+                }
+            }
         }
 
     }
