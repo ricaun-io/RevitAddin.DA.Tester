@@ -13,26 +13,33 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
-    public class DesignAutomationService
+    public abstract class DesignAutomationService
     {
-        private const string INPUT_PARAM = "input";
-        private const string OUTPUT_PARAM = "output";
-
+        #region private readonly
         private readonly string forgeEnvironment;
         private readonly DesignAutomationClient designAutomationClient;
         private readonly OssClient ossClient;
+        private readonly string appName;
+        #endregion
+
+        #region public
+        public string AppName => appName;
         public DesignAutomationClient DesignAutomationClient => designAutomationClient;
         public OssClient OssClient => ossClient;
+        #endregion
+
         #region Constructor
         public DesignAutomationService(
+            string appName,
             ForgeConfiguration forgeConfiguration = null,
             string forgeEnvironment = "dev")
         {
+            this.appName = appName;
             forgeConfiguration = forgeConfiguration ?? new ForgeConfiguration();
 
-            if (string.IsNullOrWhiteSpace(forgeConfiguration.ClientId)) 
+            if (string.IsNullOrWhiteSpace(forgeConfiguration.ClientId))
                 forgeConfiguration.ClientId = Environment.GetEnvironmentVariable("FORGE_CLIENT_ID");
-            if (string.IsNullOrWhiteSpace(forgeConfiguration.ClientSecret)) 
+            if (string.IsNullOrWhiteSpace(forgeConfiguration.ClientSecret))
                 forgeConfiguration.ClientSecret = Environment.GetEnvironmentVariable("FORGE_CLIENT_SECRET");
 
             var service = GetForgeService(forgeConfiguration);
@@ -40,7 +47,8 @@ namespace DesignAutomationConsole.Services
             this.forgeEnvironment = forgeEnvironment;
             this.designAutomationClient = new DesignAutomationClient(service);
 
-            this.ossClient = new OssClient(new Autodesk.Forge.Oss.Configuration() { 
+            this.ossClient = new OssClient(new Autodesk.Forge.Oss.Configuration()
+            {
                 ClientId = forgeConfiguration.ClientId,
                 ClientSecret = forgeConfiguration.ClientSecret
             });
@@ -58,16 +66,21 @@ namespace DesignAutomationConsole.Services
         }
         #endregion
 
-        #region Names
+        #region Consts
         private const string LATEST = "$LATEST";
         private const string BUNDLE_NAME = "Bundle";
         private const string ACTIVITY_NAME = "Activity";
-        private const string CORE_ENGINE_REVIT = "Autodesk.Revit";
-        private const string CORE_CONSOLE_EXE_REVIT = "revitcoreconsole.exe";
-        public virtual string BundleName() => BUNDLE_NAME;
-        public virtual string ActivityName() => ACTIVITY_NAME;
-        public virtual string CoreEngine() => CORE_ENGINE_REVIT;
-        public virtual string CoreConsoleExe() => CORE_CONSOLE_EXE_REVIT;
+        protected virtual string BundleName() => BUNDLE_NAME;
+        protected virtual string ActivityName() => ACTIVITY_NAME;
+        #endregion
+
+        #region Names
+        public abstract string[] CoreEngineVersions();
+        public abstract string CoreEngine();
+        public abstract string CoreConsoleExe();
+        protected abstract void CoreCreateActivity(Activity activity);
+        protected abstract void CoreCreateWorkItem(WorkItem workItemBundle, object[] arguments);
+
         #endregion
 
         #region Get
@@ -127,7 +140,7 @@ namespace DesignAutomationConsole.Services
 
         #region Bundle
 
-        public async Task<AppBundle> GetBundleAsync(string appName)
+        public async Task<AppBundle> GetBundleAsync()
         {
             var bundleName = this.GetBundleName(appName);
             var qualifiedId = this.GetQualifiedId(bundleName);
@@ -147,13 +160,13 @@ namespace DesignAutomationConsole.Services
 
             return data.OrderBy(e => e);
         }
-        public async Task DeleteAppBundleAsync(string appName)
+        public async Task DeleteAppBundleAsync()
         {
             var bundleName = this.GetBundleName(appName);
             await this.designAutomationClient.DeleteAppBundleAsync(bundleName);
         }
 
-        public async Task DeleteAppBundleAliasAsync(string appName, string aliasId = null)
+        public async Task DeleteAppBundleAliasAsync(string aliasId = null)
         {
             if (string.IsNullOrWhiteSpace(aliasId))
                 aliasId = this.forgeEnvironment;
@@ -162,7 +175,7 @@ namespace DesignAutomationConsole.Services
             await this.designAutomationClient.DeleteAppBundleAliasAsync(bundleName, aliasId);
         }
 
-        public async Task<AppBundle> CreateAppBundleAsync(string appName, string packagePath)
+        public async Task<AppBundle> CreateAppBundleAsync(string packagePath)
         {
             var engine = GetDefaultEngine();
 
@@ -214,7 +227,7 @@ namespace DesignAutomationConsole.Services
 
         #region BundleVersion
 
-        public async Task<IEnumerable<int>> GetAppBundleVersionsAsync(string appName)
+        public async Task<IEnumerable<int>> GetAppBundleVersionsAsync()
         {
             var bundleName = this.GetBundleName(appName);
 
@@ -222,21 +235,21 @@ namespace DesignAutomationConsole.Services
             return data.OrderBy(e => e);
         }
 
-        public async Task DeleteAppBundleVersionAsync(string appName, int version)
+        public async Task DeleteAppBundleVersionAsync(int version)
         {
             var bundleName = this.GetBundleName(appName);
             await designAutomationClient.DeleteAppBundleVersionAsync(bundleName, version);
         }
 
-        public async Task<IEnumerable<int>> DeleteNotUsedAppBundleVersionsAsync(string appName)
+        public async Task<IEnumerable<int>> DeleteNotUsedAppBundleVersionsAsync()
         {
-            var versions = await GetAppBundleVersionsAsync(appName);
+            var versions = await GetAppBundleVersionsAsync();
             var data = new List<int>();
             foreach (var version in versions)
             {
                 try
                 {
-                    await DeleteAppBundleVersionAsync(appName, version);
+                    await DeleteAppBundleVersionAsync(version);
                     data.Add(version);
                 }
                 catch { }
@@ -246,12 +259,13 @@ namespace DesignAutomationConsole.Services
 
         #endregion
 
-
         #region Activity
 
-        public async Task DeleteActivity(string appName)
+        public async Task DeleteActivity(string engine = null)
         {
-            var activityName = this.GetActivityName(appName);
+            engine = GetDefaultEngine(engine);
+
+            var activityName = this.GetActivityName(appName, engine);
             await this.designAutomationClient.DeleteActivityAsync(activityName);
         }
 
@@ -270,7 +284,7 @@ namespace DesignAutomationConsole.Services
             return data.OrderBy(e => e);
         }
 
-        public async Task<Activity> CreateActivityAsync(string appName, string engine = null)
+        public async Task<Activity> CreateActivityAsync(string engine = null)
         {
             engine = GetDefaultEngine(engine);
 
@@ -292,44 +306,6 @@ namespace DesignAutomationConsole.Services
             return activity;
         }
 
-        private async Task<Activity> CreateNewActivityAsync(string appName, string engine)
-        {
-            string activityName = this.GetActivityName(appName, engine);
-            Activity activity = this.CreateActivity(appName, engine);
-
-            activity = await designAutomationClient.CreateActivityAsync(activity);
-
-            var alias = new Alias();
-            alias.Id = this.forgeEnvironment;
-            alias.Version = 1;
-
-            await designAutomationClient.CreateActivityAliasAsync(activityName, alias);
-
-            return activity;
-        }
-
-        private async Task<Activity> UpdateActivityAsync(string appName, string engine)
-        {
-            string activityName = this.GetActivityName(appName, engine);
-            Activity activity = this.CreateActivity(appName, engine);
-
-            // Set Id = null to Update Version
-            activity.Id = null;
-
-            activity = await designAutomationClient.CreateActivityVersionAsync(activityName, activity);
-            if (activity == null)
-            {
-                throw new Exception("Error trying to update existing activity version");
-            }
-
-            var alias = new AliasPatch();
-            alias.Version = (int)activity.Version;
-
-            await this.designAutomationClient.ModifyActivityAliasAsync(activityName, this.forgeEnvironment, alias);
-
-            return activity;
-        }
-
         private Activity CreateActivity(string appName, string engine)
         {
             var bundleName = this.GetBundleName(appName);
@@ -342,38 +318,29 @@ namespace DesignAutomationConsole.Services
             var commandLine = $"$(engine.path)\\{CoreConsoleExe()} {commandInput} /al \"$(appbundles[{bundleName}].path)\"";
             var script = string.Empty;
 
-            var inputParam = new Parameter();
-            inputParam.Description = "The input json.";
-            inputParam.LocalName = $"{INPUT_PARAM}.json";
-            inputParam.Verb = Verb.Get;
-
-            var outputParam = new Parameter();
-            outputParam.Description = "The output json.";
-            outputParam.LocalName = $"{OUTPUT_PARAM}.json";
-            outputParam.Verb = Verb.Put;
-
             var activity = new Activity();
             activity.Id = activityName;
             activity.Description = $"Activity {appName}";
             activity.Appbundles = new List<string>() { bundleId };
             activity.CommandLine = new List<string>() { commandLine };
             activity.Engine = engine;
+
             //activity.Settings = new Dictionary<string, ISetting>()
             //{
             //    { "script", new StringSetting() { Value = script } }
             //};
-            activity.Parameters = new Dictionary<string, Parameter>()
-            {
-                { INPUT_PARAM, inputParam },
-                { OUTPUT_PARAM, outputParam },
-            };
+            activity.Parameters = new Dictionary<string, Parameter>();
+
+            CoreCreateActivity(activity);
+
             return activity;
         }
+
         #endregion
 
         #region ActivityVersion
 
-        public async Task<IEnumerable<int>> GetActivityVersionsAsync(string appName, string engine = null)
+        public async Task<IEnumerable<int>> GetActivityVersionsAsync(string engine = null)
         {
             engine = GetDefaultEngine(engine);
             var activityName = this.GetActivityName(appName, engine);
@@ -381,22 +348,22 @@ namespace DesignAutomationConsole.Services
             var data = await PageUtils.GetAllItems(this.designAutomationClient.GetActivityVersionsAsync, activityName);
             return data.OrderBy(e => e);
         }
-        public async Task DeleteActivityVersionAsync(string appName, int version, string engine = null)
+        public async Task DeleteActivityVersionAsync(int version, string engine = null)
         {
             engine = GetDefaultEngine(engine);
             var activityName = this.GetActivityName(appName, engine);
             await designAutomationClient.DeleteActivityVersionAsync(activityName, version);
         }
 
-        public async Task<IEnumerable<int>> DeleteNotUsedActivityVersionsAsync(string appName, string engine = null)
+        public async Task<IEnumerable<int>> DeleteNotUsedActivityVersionsAsync(string engine = null)
         {
-            var versions = await GetActivityVersionsAsync(appName, engine);
+            var versions = await GetActivityVersionsAsync(engine);
             var data = new List<int>();
             foreach (var version in versions)
             {
                 try
                 {
-                    await DeleteActivityVersionAsync(appName, version, engine);
+                    await DeleteActivityVersionAsync(version, engine);
                     data.Add(version);
                 }
                 catch { }
@@ -406,7 +373,6 @@ namespace DesignAutomationConsole.Services
 
         #endregion
 
-
         #region WorkItem
 
         public async Task DeleteWorkItem(string id)
@@ -414,8 +380,8 @@ namespace DesignAutomationConsole.Services
             await this.designAutomationClient.DeleteWorkItemAsync(id);
         }
 
-        public async Task<WorkItemStatus> CreateWorkItemAsync(string appName, string engine,
-            string inputJson, string outputUrl)
+        public async Task<WorkItemStatus> CreateWorkItemAsync(string engine,
+            params object[] arguments)
         {
             engine = GetDefaultEngine(engine);
 
@@ -425,51 +391,15 @@ namespace DesignAutomationConsole.Services
             var workItemBundle = new WorkItem();
             workItemBundle.ActivityId = activityId;
 
-            workItemBundle.Arguments = new Dictionary<string, IArgument>()
-            {
-                { INPUT_PARAM, ToJsonArgument(inputJson) },
-                { OUTPUT_PARAM,  ToCallbackArgument(outputUrl) },
-            };
+            workItemBundle.Arguments = new Dictionary<string, IArgument>();
+
+            CoreCreateWorkItem(workItemBundle, arguments);
 
             var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
 
             return status;
         }
 
-        #region Argument
-        protected IArgument ToJsonArgument(string json)
-        {
-            var argument = new XrefTreeArgument();
-            argument.Url = $"data:application/json,{json}";
-            argument.Verb = Verb.Get;
-            return argument;
-        }
-
-        protected IArgument ToJsonArgument<T>(T value)
-        {
-            var json = JsonConvert.SerializeObject(value);
-            var argument = new XrefTreeArgument();
-            argument.Url = $"data:application/json,{json}";
-            argument.Verb = Verb.Get;
-            return argument;
-        }
-
-        protected IArgument ToFileArgument(string filePathUrl)
-        {
-            var argument = new XrefTreeArgument();
-            argument.Url = filePathUrl;
-            return argument;
-        }
-
-        protected IArgument ToCallbackArgument(string callback, Verb verb = Verb.Put)
-        {
-            var argument = new XrefTreeArgument();
-            argument.Url = callback;
-            argument.Verb = verb;
-            return argument;
-        }
-
-        #endregion
 
         public async Task<WorkItemStatus> CheckWorkItemAsync(string id)
         {
@@ -489,49 +419,6 @@ namespace DesignAutomationConsole.Services
             }
             return status;
         }
-
-        public async Task<object> SendWorkItemAndGetResponse(string appName, string engine, string inputJson)
-        {
-            //var input = "{\"Text\": \"Hello Youtube.\"}";
-            var nickname = await GetNicknameAsync();
-            var bucketKey = nickname.ToLower()+"_"+ appName.ToLower();
-            var fileName = OUTPUT_PARAM + engine;
-            var bucket = await ossClient.TryGetBucketDetailsAsync(bucketKey);
-            if (bucket is null) bucket = await ossClient.CreateBucketAsync(bucketKey);
-
-            Console.WriteLine($"Bucket: {bucket.BucketKey}");
-
-            var writeSignedUrl = await ossClient.CreateSignedFileWriteAsync(bucketKey, fileName);
-
-            var status = await this.CreateWorkItemAsync(appName, engine, inputJson, writeSignedUrl);
-
-            var number = 0;
-            while (status.Status == Status.Pending | status.Status == Status.Inprogress)
-            {
-                Console.WriteLine(status);
-                if (number++ > 120) break;
-                await Task.Delay(5000);
-                status = await this.CheckWorkItemAsync(status.Id);
-            }
-
-            //if (status.Status == Status.Success)
-            //    return await RequestService.GetStringAsync(callbackUrl);
-            Console.WriteLine(status);
-            Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
-
-            if (status.Status == Status.Success)
-            {
-                var readSignedUrl = await ossClient.CreateSignedFileAsync(bucketKey, fileName);
-                await RequestService.GetFileAsync(readSignedUrl, fileName);
-                var output = await RequestService.GetStringAsync(readSignedUrl);
-                Console.WriteLine(output);
-            }
-
-
-            return status;
-        }
-
-
         #endregion
 
         #region Account

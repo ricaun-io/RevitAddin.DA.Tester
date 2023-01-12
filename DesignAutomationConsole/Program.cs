@@ -32,7 +32,6 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole
 {
-
     public class Program
     {
         private const string RequestUri0 =
@@ -40,9 +39,6 @@ namespace DesignAutomationConsole
 
         private const string RequestUri =
             "https://github.com/ricaun-io/RevitAddin.DA.Tester/releases/latest/download/RevitAddin.DA.Tester.bundle.zip";
-
-        private static string versionEngine { get; set; } = "2018";
-        private static string[] versionEngines { get; set; } = new[] { "2018", "2019", "2020", "2021", "2022", "2023" };
 
         public static async Task Main(string[] args)
         {
@@ -53,21 +49,23 @@ namespace DesignAutomationConsole
             //    ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
             //};
 
-            var designAutomationService = new DesignAutomationService();
+            var appName = "RevitAddin_DA_Tester";
+
+            var designAutomationService = new RevitDesignAutomationService(appName);
 
             var name = designAutomationService.GetNickname();
             Console.WriteLine($"Nickname: {name}");
 
-            var bundlesNames = await designAutomationService.GetAllBundlesAsync();
-            foreach (var bundlesName in bundlesNames)
-            {
-                Console.WriteLine($"Bundle: {bundlesName}");
-            }
-            var activities = await designAutomationService.GetAllActivitiesAsync();
-            foreach (var item in activities)
-            {
-                Console.WriteLine($"Activity: {item}");
-            }
+            //var bundlesNames = await designAutomationService.GetAllBundlesAsync();
+            //foreach (var bundlesName in bundlesNames)
+            //{
+            //    Console.WriteLine($"Bundle: {bundlesName}");
+            //}
+            //var activities = await designAutomationService.GetAllActivitiesAsync();
+            //foreach (var item in activities)
+            //{
+            //    Console.WriteLine($"Activity: {item}");
+            //}
 
             //var bb = await designAutomationService.OssClient.GetBucketsAsync();
             //foreach (var item in bb.Items)
@@ -78,34 +76,33 @@ namespace DesignAutomationConsole
 
             //await designAutomationService.CreateNicknameAsync("ricaun2");
 
-            var appName = "RevitAddin_DA_Tester";
-            await CreateBundles(designAutomationService, appName);
-            await CreateActivities(designAutomationService, appName);
-            await CreateWorkItem(designAutomationService, appName);
+            var appBundleFilePath = await RequestService.GetFileAsync(RequestUri);
+            await designAutomationService.Initialize(appBundleFilePath);
+            await designAutomationService.DeleteAppBundleAndActivities();
+            //await CreateBundles(designAutomationService);
+            //await CreateActivities(designAutomationService);
+            //await CreateWorkItem(designAutomationService);
         }
 
         private static async Task CreateWorkItem(
-            DesignAutomationService designAutomationService,
-            string appName)
+            RevitDesignAutomationService designAutomationService)
         {
             var tasks = new List<Task>();
-            foreach (var versionEngine in versionEngines)
+            foreach (var versionEngine in designAutomationService.CoreEngineVersions())
             {
                 var input = "{\"Text\": \"Hello World.\"}";
-                var task = designAutomationService.SendWorkItemAndGetResponse(appName, versionEngine, input);
+                var task = designAutomationService.SendWorkItemAndGetResponse(versionEngine, input);
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
         }
 
         private static async Task CreateActivities(
-        DesignAutomationService designAutomationService,
-        string appName)
+        DesignAutomationService designAutomationService)
         {
-            foreach (var versionEngine in versionEngines)
+            foreach (var versionEngine in designAutomationService.CoreEngineVersions())
             {
-
-                var activity = await designAutomationService.CreateActivityAsync(appName, versionEngine);
+                var activity = await designAutomationService.CreateActivityAsync(versionEngine);
                 Console.WriteLine($"Created {activity.Id} {activity.Version}");
                 Console.WriteLine(activity);
 
@@ -115,20 +112,19 @@ namespace DesignAutomationConsole
                 //    Console.WriteLine($"Activity {appName} - {version}");
                 //}
 
-                var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(appName, versionEngine);
+                var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(versionEngine);
                 Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
             }
 
             var activities = await designAutomationService.GetAllActivitiesAsync();
-            foreach (var item in activities.Where(e => e.Contains(appName)))
+            foreach (var item in activities.Where(e => e.Contains(designAutomationService.AppName)))
             {
                 Console.WriteLine(item);
             }
         }
 
         private static async Task CreateBundles(
-            DesignAutomationService designAutomationService,
-            string appName)
+            DesignAutomationService designAutomationService)
         {
 
             //var name = await designAutomationService.GetNicknameAsync();
@@ -161,13 +157,12 @@ namespace DesignAutomationConsole
             for (int i = 0; i < 1; i++)
             {
                 var appBundle = await designAutomationService.CreateAppBundleAsync(
-                    appName,
                     filePath);
 
                 Console.WriteLine(appBundle);
             }
 
-            var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync(appName);
+            var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync();
             Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
 
             Console.WriteLine("-------------");
@@ -180,10 +175,10 @@ namespace DesignAutomationConsole
 
             Console.WriteLine("-------------");
 
-            var versions = await designAutomationService.GetAppBundleVersionsAsync(appName);
+            var versions = await designAutomationService.GetAppBundleVersionsAsync();
             foreach (var version in versions)
             {
-                Console.WriteLine($"{appName}\t {version}");
+                Console.WriteLine($"{designAutomationService.AppName}\t {version}");
             }
 
             //Console.WriteLine("-------------");
@@ -212,16 +207,6 @@ namespace DesignAutomationConsole
 
         }
 
-        public static string checkMD5(string filename)
-        {
-            using (var md5 = MD5.Create())
-            {
-                using (var stream = File.OpenRead(filename))
-                {
-                    return Encoding.Default.GetString(md5.ComputeHash(stream));
-                }
-            }
-        }
 
     }
 }
