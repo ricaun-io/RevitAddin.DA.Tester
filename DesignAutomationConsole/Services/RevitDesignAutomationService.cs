@@ -65,9 +65,9 @@ namespace DesignAutomationConsole.Services
             };
         }
 
-        public async Task Initialize(string filePath)
+        public async Task Initialize(string packagePath)
         {
-            var appBundle = await CreateAppBundleAsync(filePath);
+            var appBundle = await CreateAppBundleAsync(packagePath);
             Console.WriteLine($"Created AppBundle Id: {appBundle.Id} {appBundle.Version}");
             var appBundleDeleted = await DeleteNotUsedAppBundleVersionsAsync();
             if (appBundleDeleted.Any())

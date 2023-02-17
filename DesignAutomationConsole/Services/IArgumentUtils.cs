@@ -3,6 +3,9 @@ using Newtonsoft.Json;
 
 namespace DesignAutomationConsole.Services
 {
+    /// <summary>
+    /// IArgumentUtils
+    /// </summary>
     public static class IArgumentUtils
     {
         /// <summary>
@@ -27,9 +30,7 @@ namespace DesignAutomationConsole.Services
         public static IArgument ToJsonArgument<T>(T value)
         {
             var json = JsonConvert.SerializeObject(value);
-            var argument = new XrefTreeArgument();
-            argument.Url = $"data:application/json,{json}";
-            argument.Verb = Verb.Get;
+            var argument = ToJsonArgument(json);
             return argument;
         }
 
