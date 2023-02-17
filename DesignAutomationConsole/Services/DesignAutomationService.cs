@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
+
     public abstract class DesignAutomationService
     {
         #region private readonly
@@ -82,6 +83,30 @@ namespace DesignAutomationConsole.Services
         protected abstract void CoreCreateWorkItem(WorkItem workItemBundle, object[] arguments);
 
         #endregion
+
+        public async Task Run<T>(T value) where T : class
+        {
+            var parameterArgumentService = new ParameterArgumentService<T>(this, value);
+            await parameterArgumentService.Initialize();
+
+
+            var activityParameters = parameterArgumentService.Parameters;
+            foreach (var item in activityParameters)
+            {
+                Console.WriteLine($"{item.Key} {item.Value}");
+            }
+
+            var workItemArguments = parameterArgumentService.Arguments;
+            foreach (var item in workItemArguments)
+            {
+                Console.WriteLine($"{item.Key} {item.Value}");
+            }
+
+            await parameterArgumentService.Finalize();
+
+        }
+
+
 
         #region Get
         private string GetQualifiedId(string packageName, bool enviromentEnable = true)

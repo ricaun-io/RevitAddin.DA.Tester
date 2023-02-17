@@ -77,9 +77,21 @@ namespace DesignAutomationConsole
             //await designAutomationService.CreateNicknameAsync("ricaun2");
 
             var appBundleFilePath = await RequestService.GetFileAsync(RequestUri);
-            await designAutomationService.Initialize(appBundleFilePath);
-            await CreateWorkItem(designAutomationService);
-            await designAutomationService.DeleteAppBundleAndActivities();
+            //await designAutomationService.Initialize(appBundleFilePath);
+            //await CreateWorkItem(designAutomationService);
+
+            var par = new ParameterOptions()
+            {
+                Input2 = "{\"Text\": \"Hello World.\"}",
+                Input = new ParameterOptions.InputModel() { Text = "Hello." },
+                Output = "",
+            };
+
+            await designAutomationService.Run<ParameterOptions>(par);
+
+            Console.WriteLine($">>> {par.Output}");
+
+            //await designAutomationService.DeleteAppBundleAndActivities();
             //await CreateBundles(designAutomationService);
             //await CreateActivities(designAutomationService);
         }

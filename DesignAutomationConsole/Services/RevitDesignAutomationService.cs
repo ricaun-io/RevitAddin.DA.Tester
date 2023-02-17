@@ -83,6 +83,8 @@ namespace DesignAutomationConsole.Services
             }
         }
 
+
+
         public async Task DeleteAppBundleAndActivities()
         {
             try
@@ -105,9 +107,9 @@ namespace DesignAutomationConsole.Services
         public async Task<object> SendWorkItemAndGetResponse(string engine, string inputJson)
         {
             //var input = "{\"Text\": \"Hello Youtube.\"}";
+            var fileName = OUTPUT_PARAM + engine;
             var nickname = await GetNicknameAsync();
             var bucketKey = nickname.ToLower() + "_" + AppName.ToLower();
-            var fileName = OUTPUT_PARAM + engine;
             var bucket = await OssClient.TryGetBucketDetailsAsync(bucketKey);
             if (bucket is null) bucket = await OssClient.CreateBucketAsync(bucketKey);
 

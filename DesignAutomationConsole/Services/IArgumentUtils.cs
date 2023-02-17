@@ -1,5 +1,7 @@
 ﻿using Autodesk.Forge.DesignAutomation.Model;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace DesignAutomationConsole.Services
 {
@@ -30,6 +32,7 @@ namespace DesignAutomationConsole.Services
         public static IArgument ToJsonArgument<T>(T value)
         {
             var json = JsonConvert.SerializeObject(value);
+            if (value is string str) json = str;
             var argument = ToJsonArgument(json);
             return argument;
         }
@@ -60,5 +63,8 @@ namespace DesignAutomationConsole.Services
             argument.Verb = verb;
             return argument;
         }
+
+
+
     }
 }
