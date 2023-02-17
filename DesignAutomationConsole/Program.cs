@@ -78,10 +78,10 @@ namespace DesignAutomationConsole
 
             var appBundleFilePath = await RequestService.GetFileAsync(RequestUri);
             await designAutomationService.Initialize(appBundleFilePath);
+            await CreateWorkItem(designAutomationService);
             await designAutomationService.DeleteAppBundleAndActivities();
             //await CreateBundles(designAutomationService);
             //await CreateActivities(designAutomationService);
-            //await CreateWorkItem(designAutomationService);
         }
 
         private static async Task CreateWorkItem(
