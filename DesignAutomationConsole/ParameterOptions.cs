@@ -10,9 +10,8 @@ namespace DesignAutomationConsole
             Required = true)]
         public InputModel Input { get; set; }
 
-        [ParameterInput("input2.json",
-            Description = "Input2 file.")]
-        public string Input2 { get; set; }
+        [ParameterInput("inputJson.json")]
+        public string InputJson { get; set; }
 
         [ParameterOutput("output.json",
             Description = "Output file.")]
@@ -24,7 +23,7 @@ namespace DesignAutomationConsole
         public OutputModel OutputDownload { get; set; }
 
         [ParameterInput("output_download.json", UploadFile = true)]
-        public string InputUpLoad { get; set; }
+        public string InputUpload { get; set; }
 
         public class InputModel
         {

@@ -56,10 +56,10 @@ namespace DesignAutomationConsole
 
             var parameters = new ParameterOptions()
             {
-                Input2 = "{\"Text\": \"Hello World.\"}",
+                InputJson = "{\"Text\": \"Hello World.\"}",
                 Input = new ParameterOptions.InputModel() { Text = "Hello." },
                 Output = "",
-                InputUpLoad = "test"
+                InputUpload = "test"
             };
 
             await designAutomationService.Run(parameters);

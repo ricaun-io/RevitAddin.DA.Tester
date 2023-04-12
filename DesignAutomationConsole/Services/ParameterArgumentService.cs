@@ -33,7 +33,7 @@ namespace DesignAutomationConsole.Services
             foreach (var property in obj.GetType().GetProperties())
             {
                 var value = property.GetValue(obj);
-                var name = property.Name.ToLower();
+                var name = StringUtils.ConvertUpperToUnderscore(property.Name);
                 if (property.TryGetAttribute(out ParameterInputAttribute parameterInput))
                 {
                     var localName = parameterInput.Name;
@@ -152,6 +152,26 @@ namespace DesignAutomationConsole.Services
             return await designAutomationService.OssClient.CreateSignedFileAsync(bucketKey, fileName, "readwrite");
         }
 
+        class StringUtils
+        {
+            public static string ConvertUpperToUnderscore(string inputString)
+            {
+                string outputString = "";
+                for (int i = 0; i < inputString.Length; i++)
+                {
+                    char c = inputString[i];
+                    if (char.IsUpper(c))
+                    {
+                        outputString += i == 0 ? char.ToLower(c) : "_" + char.ToLower(c);
+                    }
+                    else
+                    {
+                        outputString += c;
+                    }
+                }
+                return outputString;
+            }
+        }
 
         class InputUtils
         {
