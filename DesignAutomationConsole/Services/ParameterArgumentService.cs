@@ -37,6 +37,7 @@ namespace DesignAutomationConsole.Services
                 if (property.TryGetAttribute(out ParameterInputAttribute parameterInput))
                 {
                     var localName = parameterInput.Name;
+                    var uploadFileName = localName;
                     var inputParam = new Parameter()
                     {
                         LocalName = localName,
