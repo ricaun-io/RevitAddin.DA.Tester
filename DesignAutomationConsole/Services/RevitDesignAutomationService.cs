@@ -18,6 +18,8 @@ namespace DesignAutomationConsole.Services
 
         private const string INPUT_PARAM = "input";
         private const string OUTPUT_PARAM = "output";
+        private const string READ_PARAM = "read";
+        private const string ENGINE_PARAM = "engine_over";
 
         public override string CoreConsoleExe()
         {
@@ -31,7 +33,7 @@ namespace DesignAutomationConsole.Services
 
         public override string[] CoreEngineVersions()
         {
-            return new[] { "2018" };
+            return new[] { "2021" };
             return new[] { "2018", "2019", "2020", "2021", "2022", "2023" };
         }
 
@@ -47,10 +49,22 @@ namespace DesignAutomationConsole.Services
             outputParam.LocalName = $"{OUTPUT_PARAM}.json";
             outputParam.Verb = Verb.Put;
 
+            var readParam = new Parameter();
+            readParam.LocalName = READ_PARAM;
+            readParam.Description = "read";
+            readParam.Verb = Verb.Read;
+
+            var engineParam = new Parameter();
+            engineParam.LocalName = ENGINE_PARAM;
+            engineParam.Description = ENGINE_PARAM;
+            engineParam.Verb = Verb.Read;
+
             activity.Parameters = new Dictionary<string, Parameter>()
             {
                 { INPUT_PARAM, inputParam },
                 { OUTPUT_PARAM, outputParam },
+                //{ READ_PARAM, readParam },
+                //{ ENGINE_PARAM, engineParam },
             };
         }
 
@@ -62,6 +76,8 @@ namespace DesignAutomationConsole.Services
             {
                 { INPUT_PARAM, IArgumentUtils.ToJsonArgument(inputJson) },
                 { OUTPUT_PARAM,  IArgumentUtils.ToCallbackArgument(outputUrl) },
+                //{ READ_PARAM,  new StringArgument(){ Value = "FRA"} },
+                //{ ENGINE_PARAM,  new StringArgument(){ Value = "Autodesk.Revit+2021"} },
             };
         }
 

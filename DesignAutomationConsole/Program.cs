@@ -53,6 +53,20 @@ namespace DesignAutomationConsole
 
             var designAutomationService = new RevitDesignAutomationService(appName);
 
+
+            var parameters = new ParameterOptions()
+            {
+                Input2 = "{\"Text\": \"Hello World.\"}",
+                Input = new ParameterOptions.InputModel() { Text = "Hello." },
+                Output = "",
+                InputUpLoad = "test"
+            };
+
+            await designAutomationService.Run(parameters);
+
+            Console.WriteLine($">>> {parameters.Output}");
+            return;
+
             var name = designAutomationService.GetNickname();
             Console.WriteLine($"Nickname: {name}");
 
@@ -80,16 +94,7 @@ namespace DesignAutomationConsole
             //await designAutomationService.Initialize(appBundleFilePath);
             //await CreateWorkItem(designAutomationService);
 
-            var par = new ParameterOptions()
-            {
-                Input2 = "{\"Text\": \"Hello World.\"}",
-                Input = new ParameterOptions.InputModel() { Text = "Hello." },
-                Output = "",
-            };
 
-            await designAutomationService.Run<ParameterOptions>(par);
-
-            Console.WriteLine($">>> {par.Output}");
 
             //await designAutomationService.DeleteAppBundleAndActivities();
             //await CreateBundles(designAutomationService);

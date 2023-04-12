@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DesignAutomationConsole.Attributes;
+using System;
 
 namespace DesignAutomationConsole
 {
@@ -14,13 +15,16 @@ namespace DesignAutomationConsole
         public string Input2 { get; set; }
 
         [ParameterOutput("output.json",
-            Description = "Output file.",
-            DownloadFile = true)]
+            Description = "Output file.")]
         public string Output { get; set; }
 
-        [ParameterOutput("output2.json",
-            Description = "Output2 file.")]
-        public OutputModel Output2 { get; set; }
+        [ParameterOutput("output_download.json",
+            Description = "OutputDownload file.",
+            DownloadFile = true)]
+        public OutputModel OutputDownload { get; set; }
+
+        [ParameterInput("output_download.json", UploadFile = true)]
+        public string InputUpLoad { get; set; }
 
         public class InputModel
         {
@@ -34,36 +38,5 @@ namespace DesignAutomationConsole
             public DateTime TimeStart { get; set; } = DateTime.UtcNow;
             public string Text { get; set; }
         }
-    }
-
-    public class ParameterInputAttribute : Attribute
-    {
-        public ParameterInputAttribute(string name)
-        {
-            Name = name;
-        }
-        /// <summary>
-        /// Provides default name of the file or folder on the processing server for this parameter. Note this name may be overriden in various ways.
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// The description of the parameter.
-        /// </summary>
-        public string Description { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool Required { get; set; } = false;
-    }
-
-    public class ParameterOutputAttribute : Attribute
-    {
-        public ParameterOutputAttribute(string name)
-        {
-            Name = name;
-        }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool DownloadFile { get; set; } = false;
     }
 }

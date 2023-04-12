@@ -84,29 +84,42 @@ namespace DesignAutomationConsole.Services
 
         #endregion
 
-        public async Task Run<T>(T value) where T : class
+        public async Task Run<T>(Action<T> options) where T : class
         {
-            var parameterArgumentService = new ParameterArgumentService<T>(this, value);
+            var instance = Activator.CreateInstance<T>();
+            options?.Invoke(instance);
+            await Run(instance);
+        }
+
+        public async Task Run<T>(T options) where T : class
+        {
+            var parameterArgumentService = new ParameterArgumentService<T>(this, options);
             await parameterArgumentService.Initialize();
 
-
+            Console.WriteLine("------------------------");
+            Console.WriteLine($"Parameters");
             var activityParameters = parameterArgumentService.Parameters;
             foreach (var item in activityParameters)
             {
                 Console.WriteLine($"{item.Key} {item.Value}");
             }
 
+            Console.WriteLine($"Arguments");
             var workItemArguments = parameterArgumentService.Arguments;
             foreach (var item in workItemArguments)
             {
                 Console.WriteLine($"{item.Key} {item.Value}");
             }
 
+            var downloads = parameterArgumentService.DownloadFiles;
+            foreach (var item in downloads)
+            {
+                Console.WriteLine($"DownloadFiles: {item.Key} {item.Value}");
+            }
+            Console.WriteLine("------------------------");
+
             await parameterArgumentService.Finalize();
-
         }
-
-
 
         #region Get
         private string GetQualifiedId(string packageName, bool enviromentEnable = true)
@@ -339,8 +352,10 @@ namespace DesignAutomationConsole.Services
 
             var commandInput = "";
             //commandInput = $"/i \"$(args[{FILE_PARAM}].path)\"";
+            var commandLanguage = "";
+            //commandLanguage = $"/l $(args[{"read"}].value)";
 
-            var commandLine = $"$(engine.path)\\{CoreConsoleExe()} {commandInput} /al \"$(appbundles[{bundleName}].path)\"";
+            var commandLine = $"$(engine.path)\\{CoreConsoleExe()} {commandInput} /al \"$(appbundles[{bundleName}].path)\" {commandLanguage}";
             var script = string.Empty;
 
             var activity = new Activity();
@@ -350,10 +365,14 @@ namespace DesignAutomationConsole.Services
             activity.CommandLine = new List<string>() { commandLine };
             activity.Engine = engine;
 
+            //script = $"$(args[{"engine_over"}].value)";
+            //activity.Engine = $"$(args[{"engine_over"}].value)";
+
             //activity.Settings = new Dictionary<string, ISetting>()
             //{
             //    { "script", new StringSetting() { Value = script } }
             //};
+
             activity.Parameters = new Dictionary<string, Parameter>();
 
             CoreCreateActivity(activity);
@@ -472,10 +491,15 @@ namespace DesignAutomationConsole.Services
             var engines = await PageUtils.GetAllItems(designAutomationClient.GetEnginesAsync);
             return engines.OrderBy(e => e);
         }
+        /// <summary>
+        /// Get Last EngineVersion
+        /// </summary>
+        /// <param name="startWith"></param>
+        /// <returns></returns>
         public async Task<Engine> GetEngineAsync(string startWith)
         {
             var engines = await GetEnginesAsync();
-            var engineId = engines.FirstOrDefault(e => e.StartsWith(startWith));
+            var engineId = engines.OrderByDescending(e => e).FirstOrDefault(e => e.StartsWith(startWith));
             if (engineId is not null)
             {
                 return await this.designAutomationClient.GetEngineAsync(engineId);

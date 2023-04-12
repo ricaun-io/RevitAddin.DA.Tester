@@ -1,5 +1,6 @@
 ﻿using Autodesk.Forge.DesignAutomation.Model;
 using Autodesk.Forge.Oss;
+using DesignAutomationConsole.Attributes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,11 +34,12 @@ namespace DesignAutomationConsole.Services
             {
                 var value = property.GetValue(obj);
                 var name = property.Name.ToLower();
-                if (property.TryGetAttribute<ParameterInputAttribute>(out ParameterInputAttribute parameterInput))
+                if (property.TryGetAttribute(out ParameterInputAttribute parameterInput))
                 {
+                    var localName = parameterInput.Name;
                     var inputParam = new Parameter()
                     {
-                        LocalName = parameterInput.Name,
+                        LocalName = localName,
                         Description = parameterInput.Description,
                         Verb = Verb.Get,
                         Required = parameterInput.Required,
@@ -46,26 +48,33 @@ namespace DesignAutomationConsole.Services
                     IArgument inputArgument = IArgumentUtils.ToJsonArgument(value);
 
                     // http, file
-                    if (value is string str)
+                    if (value is string stringValue)
                     {
-                        bool IsFile(string file)
+                        if (parameterInput.UploadFile)
                         {
-                            return File.Exists(file);
+                            stringValue = InputUtils.CreateTempFile(stringValue);
+                            Console.WriteLine($"CreateTempFile: {stringValue}");
                         }
-                        bool IsUrl(string url)
+
+                        if (InputUtils.IsFile(stringValue, out string filePath))
                         {
-                            return Uri.TryCreate(url, UriKind.Absolute, out var uri);
+                            stringValue = await UploadFile(filePath, localName);
+                            Console.WriteLine($"UploadFile: {localName} {stringValue}");
                         }
-                        //if (IsUrl(str))
-                        inputArgument = IArgumentUtils.ToJsonArgument(str);
+
+                        if (InputUtils.IsUrl(stringValue))
+                        {
+                            inputArgument = IArgumentUtils.ToFileArgument(stringValue);
+                        }
                     }
                     Arguments.Add(name, inputArgument);
                 }
-                if (property.TryGetAttribute<ParameterOutputAttribute>(out ParameterOutputAttribute parameterOutput))
+                else if (property.TryGetAttribute(out ParameterOutputAttribute parameterOutput))
                 {
+                    var localName = parameterOutput.Name;
                     var outputParam = new Parameter()
                     {
-                        LocalName = parameterOutput.Name,
+                        LocalName = localName,
                         Description = parameterOutput.Description,
                         Verb = Verb.Put,
                     };
@@ -75,7 +84,7 @@ namespace DesignAutomationConsole.Services
 
                     if (value is null || (string.IsNullOrWhiteSpace(value as string)))
                     {
-                        callbackArgument = await CreateReadWrite(name);
+                        callbackArgument = await CreateReadWrite(localName);
                         if (property.PropertyType == typeof(string))
                         {
                             property.SetValue(obj, callbackArgument);
@@ -84,7 +93,7 @@ namespace DesignAutomationConsole.Services
 
                     if (parameterOutput.DownloadFile)
                     {
-                        DownloadFiles.Add(parameterOutput.Name, callbackArgument);
+                        DownloadFiles.Add(localName, callbackArgument);
                     }
 
                     var outputArgument = IArgumentUtils.ToCallbackArgument(callbackArgument);
@@ -101,26 +110,74 @@ namespace DesignAutomationConsole.Services
                 var readSignedUrl = downloadFile.Value;
                 try
                 {
+                    Console.WriteLine($"DownloadFile: {fileName}");
                     var filePath = await RequestService.GetFileAsync(readSignedUrl, fileName);
-                    Console.WriteLine(filePath);
+                    Console.WriteLine($"DownloadFile: {filePath}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    Console.WriteLine($"DownloadFile: {ex.GetType()}");
                 }
             }
+        }
+
+        private async Task<string> CreateOssBucketKey(string fileName)
+        {
+            var nickname = await designAutomationService.GetNicknameAsync();
+            var bucketKey = nickname.ToLower() + "_" + designAutomationService.AppName.ToLower();
+            var bucket = await designAutomationService.OssClient.TryGetBucketDetailsAsync(bucketKey);
+            if (bucket is null) bucket = await designAutomationService.OssClient.CreateBucketAsync(bucketKey);
+            return bucketKey;
+        }
+
+        private async Task<string> UploadFile(string localFullName, string name, string engine = null)
+        {
+            var fileName = name + engine;
+            var bucketKey = await CreateOssBucketKey(fileName);
+            var objectDetails = await designAutomationService.OssClient.UploadFileAsync(bucketKey, fileName, localFullName);
+            return await designAutomationService.OssClient.CreateSignedFileAsync(bucketKey, fileName);
+        }
+
+        private async Task<string> CreateWrite(string name, string engine = null)
+        {
+            var fileName = name + engine;
+            var bucketKey = await CreateOssBucketKey(fileName);
+            return await designAutomationService.OssClient.CreateSignedFileWriteAsync(bucketKey, fileName);
         }
 
         private async Task<string> CreateReadWrite(string name, string engine = null)
         {
             var fileName = name + engine;
-            var nickname = await designAutomationService.GetNicknameAsync();
-            var bucketKey = nickname.ToLower() + "_" + designAutomationService.AppName.ToLower();
-            var bucket = await designAutomationService.OssClient.TryGetBucketDetailsAsync(bucketKey);
-            if (bucket is null) bucket = await designAutomationService.OssClient.CreateBucketAsync(bucketKey);
-
+            var bucketKey = await CreateOssBucketKey(fileName);
             return await designAutomationService.OssClient.CreateSignedFileAsync(bucketKey, fileName, "readwrite");
         }
 
+
+        class InputUtils
+        {
+            public static string CreateTempFile(string content, string name = null)
+            {
+                var fileName = Path.GetTempFileName() + name;
+                File.WriteAllText(fileName, content);
+                return fileName;
+            }
+
+            public static bool IsFile(string file, out string filePath)
+            {
+                filePath = file;
+                try
+                {
+                    var fileInfo = new FileInfo(file);
+                    filePath = fileInfo.FullName;
+                    return fileInfo.Exists;
+                }
+                catch { }
+                return false;
+            }
+            public static bool IsUrl(string url)
+            {
+                return Uri.TryCreate(url, UriKind.Absolute, out var uri);
+            }
+        }
     }
 }
