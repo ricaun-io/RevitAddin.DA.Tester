@@ -59,7 +59,7 @@ namespace DesignAutomationConsole.Services
 
                         if (InputUtils.IsFile(stringValue, out string filePath))
                         {
-                            stringValue = await UploadFile(filePath, localName);
+                            stringValue = await UploadFile(filePath, uploadFileName);
                             Console.WriteLine($"UploadFile: {localName} {stringValue}");
                         }
 
@@ -73,6 +73,7 @@ namespace DesignAutomationConsole.Services
                 else if (property.TryGetAttribute(out ParameterOutputAttribute parameterOutput))
                 {
                     var localName = parameterOutput.Name;
+                    var downloadFileName = localName;
                     var outputParam = new Parameter()
                     {
                         LocalName = localName,
@@ -85,7 +86,7 @@ namespace DesignAutomationConsole.Services
 
                     if (value is null || (string.IsNullOrWhiteSpace(value as string)))
                     {
-                        callbackArgument = await CreateReadWrite(localName);
+                        callbackArgument = await CreateReadWrite(downloadFileName);
                         if (property.PropertyType == typeof(string))
                         {
                             property.SetValue(obj, callbackArgument);
@@ -94,7 +95,7 @@ namespace DesignAutomationConsole.Services
 
                     if (parameterOutput.DownloadFile)
                     {
-                        DownloadFiles.Add(localName, callbackArgument);
+                        DownloadFiles.Add(downloadFileName, callbackArgument);
                     }
 
                     var outputArgument = IArgumentUtils.ToCallbackArgument(callbackArgument);
