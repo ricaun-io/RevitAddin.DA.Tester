@@ -1,9 +1,18 @@
 ﻿using DesignAutomationConsole.Attributes;
 using System;
 
-namespace DesignAutomationConsole
+namespace DesignAutomationConsole.Models
 {
-    class ParameterOptions
+    public class ParameterOptionsDownloadTest
+    {
+        [ParameterInput("output.json", UploadFile = true)]
+        public InputModel Input { get; set; } = new InputModel() { Text = $"Text me {DateTime.Now}!" };
+
+        [ParameterOutput("output.json")]
+        public InputModel Output { get; set; }
+    }
+
+    public class ParameterOptionsTest
     {
         [ParameterInput("input.json",
             Description = "Input file.",
@@ -24,18 +33,5 @@ namespace DesignAutomationConsole
 
         [ParameterInput("output_download.json", UploadFile = true)]
         public string InputUpload { get; set; }
-
-        public class InputModel
-        {
-            public string Text { get; set; }
-        }
-
-        public class OutputModel
-        {
-            public string VersionName { get; set; }
-            public string VersionBuild { get; set; }
-            public DateTime TimeStart { get; set; } = DateTime.UtcNow;
-            public string Text { get; set; }
-        }
     }
 }

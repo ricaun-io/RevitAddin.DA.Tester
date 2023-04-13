@@ -4,6 +4,7 @@ using DesignAutomationConsole.Attributes;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
@@ -24,7 +25,7 @@ namespace DesignAutomationConsole.Services
         /// <summary>
         /// Download files for DA workitem when finish.
         /// </summary>
-        public Dictionary<string, string> DownloadFiles { get; } = new Dictionary<string, string>();
+        public List<DownloadFile> DownloadFiles { get; } = new List<DownloadFile>();
 
         public ParameterArgumentService(DesignAutomationService designAutomationService, T obj)
         {
@@ -56,15 +57,15 @@ namespace DesignAutomationConsole.Services
                     Parameters.Add(name, inputParam);
                     IArgument inputArgument = IArgumentUtils.ToJsonArgument(value);
 
+                    if (parameterInput.UploadFile)
+                    {
+                        value = InputUtils.CreateTempFile(value);
+                        Console.WriteLine($"CreateTempFile: {value}");
+                    }
+
                     // http, file
                     if (value is string stringValue)
                     {
-                        if (parameterInput.UploadFile)
-                        {
-                            stringValue = InputUtils.CreateTempFile(stringValue);
-                            Console.WriteLine($"CreateTempFile: {stringValue}");
-                        }
-
                         if (InputUtils.IsFile(stringValue, out string filePath))
                         {
                             stringValue = await UploadFile(filePath, uploadFileName);
@@ -76,6 +77,7 @@ namespace DesignAutomationConsole.Services
                             inputArgument = IArgumentUtils.ToFileArgument(stringValue);
                         }
                     }
+
                     Arguments.Add(name, inputArgument);
                 }
                 else if (property.TryGetAttribute(out ParameterOutputAttribute parameterOutput))
@@ -92,7 +94,7 @@ namespace DesignAutomationConsole.Services
 
                     string callbackArgument = value as string;
 
-                    if (value is null || (string.IsNullOrWhiteSpace(value as string)))
+                    if (value is null || (string.IsNullOrWhiteSpace(callbackArgument)))
                     {
                         callbackArgument = await CreateReadWrite(downloadFileName);
                         if (property.PropertyType == typeof(string))
@@ -101,9 +103,19 @@ namespace DesignAutomationConsole.Services
                         }
                     }
 
+                    if (property.PropertyType != typeof(string))
+                    {
+                        parameterOutput.DownloadFile = true;
+                    }
+
                     if (parameterOutput.DownloadFile)
                     {
-                        DownloadFiles.Add(downloadFileName, callbackArgument);
+                        var downloadFile = new DownloadFile(downloadFileName, callbackArgument)
+                        {
+                            Property = property
+                        };
+
+                        DownloadFiles.Add(downloadFile);
                     }
 
                     var outputArgument = IArgumentUtils.ToCallbackArgument(callbackArgument);
@@ -112,23 +124,32 @@ namespace DesignAutomationConsole.Services
             }
         }
 
-        public async Task Finalize()
+        public async Task<T> Finalize()
         {
             foreach (var downloadFile in DownloadFiles)
             {
-                var fileName = downloadFile.Key;
-                var readSignedUrl = downloadFile.Value;
+                var fileName = downloadFile.FileName;
                 try
                 {
-                    Console.WriteLine($"DownloadFile: {fileName}");
-                    var filePath = await RequestService.GetFileAsync(readSignedUrl, fileName);
-                    Console.WriteLine($"DownloadFile: {filePath}");
+                    Console.WriteLine($"DownloadFile: {fileName} {downloadFile.Property}");
+                    if (downloadFile.Property.PropertyType != typeof(string))
+                    {
+                        var jsonObject = await RequestService.Instance.GetJsonAsync(downloadFile.Url, downloadFile.Property.PropertyType);
+                        Console.WriteLine($"DownloadJson: {jsonObject}");
+                        downloadFile.Property.SetValue(obj, jsonObject);
+                    }
+                    else
+                    {
+                        var filePath = await RequestService.Instance.GetFileAsync(downloadFile.Url, fileName);
+                        Console.WriteLine($"DownloadFile: {filePath}");
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"DownloadFile: {ex.GetType()}");
                 }
             }
+            return this.obj;
         }
 
         #region Oss
@@ -165,6 +186,7 @@ namespace DesignAutomationConsole.Services
         #endregion
 
         #region Utils
+
         class StringUtils
         {
             public static string ConvertUpperToUnderscore(string inputString)
@@ -188,6 +210,11 @@ namespace DesignAutomationConsole.Services
 
         class InputUtils
         {
+            public static string CreateTempFile<TJson>(TJson content, string name = null)
+            {
+                return CreateTempFile(content.ToJson(), name);
+            }
+
             public static string CreateTempFile(string content, string name = null)
             {
                 var fileName = Path.GetTempFileName() + name;
@@ -214,5 +241,27 @@ namespace DesignAutomationConsole.Services
         }
 
         #endregion
+    }
+
+    public class DownloadFile
+    {
+        public string Url { get; set; }
+        public string FileName { get; set; }
+        public PropertyInfo Property { get; set; }
+
+        public DownloadFile()
+        {
+
+        }
+
+        public DownloadFile(string fileName, string url)
+        {
+            FileName = fileName;
+            Url = url;
+        }
+        public override string ToString()
+        {
+            return Url;
+        }
     }
 }

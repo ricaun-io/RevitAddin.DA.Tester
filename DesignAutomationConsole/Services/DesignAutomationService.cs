@@ -84,14 +84,14 @@ namespace DesignAutomationConsole.Services
 
         #endregion
 
-        public async Task Run<T>(Action<T> options) where T : class
+        public async Task<T> Run<T>(Action<T> options) where T : class
         {
             var instance = Activator.CreateInstance<T>();
             options?.Invoke(instance);
-            await Run(instance);
+            return await Run(instance);
         }
 
-        public async Task Run<T>(T options) where T : class
+        public async Task<T> Run<T>(T options) where T : class
         {
             var parameterArgumentService = new ParameterArgumentService<T>(this, options);
             await parameterArgumentService.Initialize();
@@ -112,13 +112,13 @@ namespace DesignAutomationConsole.Services
             }
 
             var downloads = parameterArgumentService.DownloadFiles;
-            foreach (var item in downloads)
+            foreach (var download in downloads)
             {
-                Console.WriteLine($"DownloadFiles: {item.Key} {item.Value}");
+                Console.WriteLine($"DownloadFiles: {download}");
             }
             Console.WriteLine("------------------------");
 
-            await parameterArgumentService.Finalize();
+            return await parameterArgumentService.Finalize();
         }
 
         #region Get
@@ -458,7 +458,7 @@ namespace DesignAutomationConsole.Services
             if (status.ReportUrl is not null)
             {
                 var report = $"{status.Progress}{Environment.NewLine}";
-                report += await RequestService.GetStringAsync(status.ReportUrl);
+                report += await RequestService.Instance.GetStringAsync(status.ReportUrl);
                 return report;
             }
             return status;

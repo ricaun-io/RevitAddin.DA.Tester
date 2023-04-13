@@ -152,8 +152,8 @@ namespace DesignAutomationConsole.Services
             if (status.Status == Status.Success)
             {
                 var readSignedUrl = await OssClient.CreateSignedFileAsync(bucketKey, fileName);
-                await RequestService.GetFileAsync(readSignedUrl, fileName);
-                var output = await RequestService.GetStringAsync(readSignedUrl);
+                await RequestService.Instance.GetFileAsync(readSignedUrl, fileName);
+                var output = await RequestService.Instance.GetStringAsync(readSignedUrl);
                 Console.WriteLine(output);
             }
 

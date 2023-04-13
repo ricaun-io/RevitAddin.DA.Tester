@@ -21,6 +21,7 @@
 
 using Autodesk.Forge.Core;
 using Autodesk.Forge.Oss;
+using DesignAutomationConsole.Models;
 using DesignAutomationConsole.Services;
 using System;
 using System.Collections.Generic;
@@ -54,17 +55,33 @@ namespace DesignAutomationConsole
             var designAutomationService = new RevitDesignAutomationService(appName);
 
 
-            var parameters = new ParameterOptions()
+            //var parameters = new ParameterOptionsTest()
+            //{
+            //    InputJson = "{\"Text\": \"Hello World.\"}",
+            //    Input = new InputModel() { Text = "Hello." },
+            //    Output = "",
+            //    InputUpload = "test"
+            //};
+
+            //await designAutomationService.Run(parameters);
+
+            //Console.WriteLine($">>> {parameters.Output}");
+
+            //await designAutomationService.Run<ParameterOptions>((parameters) =>
+            //{
+            //    parameters.Input = new InputModel() { Text = "Hello." };
+            //});
+
+            //Console.WriteLine("--------");
+            //Console.WriteLine("--------");
+            //Console.WriteLine("--------");
+
+            await designAutomationService.Run<ParameterOptionsDownloadTest>((parameters) =>
             {
-                InputJson = "{\"Text\": \"Hello World.\"}",
-                Input = new ParameterOptions.InputModel() { Text = "Hello." },
-                Output = "",
-                InputUpload = "test"
-            };
 
-            await designAutomationService.Run(parameters);
+            });
 
-            Console.WriteLine($">>> {parameters.Output}");
+
             return;
 
             var name = designAutomationService.GetNickname();
@@ -90,7 +107,7 @@ namespace DesignAutomationConsole
 
             //await designAutomationService.CreateNicknameAsync("ricaun2");
 
-            var appBundleFilePath = await RequestService.GetFileAsync(RequestUri);
+            var appBundleFilePath = await RequestService.Instance.GetFileAsync(RequestUri);
             await designAutomationService.Initialize(appBundleFilePath);
             await CreateWorkItem(designAutomationService);
 
@@ -159,7 +176,7 @@ namespace DesignAutomationConsole
             //    Console.WriteLine(engine);
             //}
 
-            var filePath = await RequestService.GetFileAsync(RequestUri);
+            var filePath = await RequestService.Instance.GetFileAsync(RequestUri);
 
 
 
