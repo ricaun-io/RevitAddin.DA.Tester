@@ -47,14 +47,10 @@ namespace DesignAutomationConsole.Services
                 {
                     var localName = parameterInput.Name;
                     var uploadFileName = localName;
-                    var inputParam = new Parameter()
-                    {
-                        LocalName = localName,
-                        Description = parameterInput.Description,
-                        Verb = Verb.Get,
-                        Required = parameterInput.Required,
-                    };
+
+                    var inputParam = parameterInput.ToParameter();
                     Parameters.Add(name, inputParam);
+
                     IArgument inputArgument = IArgumentUtils.ToJsonArgument(value);
 
                     if (parameterInput.UploadFile)
@@ -84,12 +80,8 @@ namespace DesignAutomationConsole.Services
                 {
                     var localName = parameterOutput.Name;
                     var downloadFileName = localName;
-                    var outputParam = new Parameter()
-                    {
-                        LocalName = localName,
-                        Description = parameterOutput.Description,
-                        Verb = Verb.Put,
-                    };
+
+                    var outputParam = parameterOutput.ToParameter();
                     Parameters.Add(name, outputParam);
 
                     string callbackArgument = value as string;
@@ -97,23 +89,20 @@ namespace DesignAutomationConsole.Services
                     if (value is null || (string.IsNullOrWhiteSpace(callbackArgument)))
                     {
                         callbackArgument = await CreateReadWrite(downloadFileName);
-                        if (property.PropertyType == typeof(string))
+                        if (PropertyUtils.IsPropertyTypeString(property))
                         {
                             property.SetValue(obj, callbackArgument);
                         }
                     }
 
-                    if (property.PropertyType != typeof(string))
+                    if (!PropertyUtils.IsPropertyTypeString(property))
                     {
                         parameterOutput.DownloadFile = true;
                     }
 
                     if (parameterOutput.DownloadFile)
                     {
-                        var downloadFile = new DownloadFile(downloadFileName, callbackArgument)
-                        {
-                            Property = property
-                        };
+                        var downloadFile = new DownloadFile(downloadFileName, callbackArgument, property);
 
                         DownloadFiles.Add(downloadFile);
                     }
@@ -132,7 +121,8 @@ namespace DesignAutomationConsole.Services
                 try
                 {
                     Console.WriteLine($"DownloadFile: {fileName} {downloadFile.Property}");
-                    if (downloadFile.Property.PropertyType != typeof(string))
+
+                    if (!PropertyUtils.IsPropertyTypeString(downloadFile.Property))
                     {
                         var jsonObject = await RequestService.Instance.GetJsonAsync(downloadFile.Url, downloadFile.Property.PropertyType);
                         Console.WriteLine($"DownloadJson: {jsonObject}");
@@ -142,6 +132,7 @@ namespace DesignAutomationConsole.Services
                     {
                         var filePath = await RequestService.Instance.GetFileAsync(downloadFile.Url, fileName);
                         Console.WriteLine($"DownloadFile: {filePath}");
+                        downloadFile.Property.SetValue(obj, filePath);
                     }
                 }
                 catch (Exception ex)
@@ -186,6 +177,14 @@ namespace DesignAutomationConsole.Services
         #endregion
 
         #region Utils
+
+        class PropertyUtils
+        {
+            public static bool IsPropertyTypeString(PropertyInfo property)
+            {
+                return property.PropertyType == typeof(string);
+            }
+        }
 
         class StringUtils
         {
@@ -248,16 +247,11 @@ namespace DesignAutomationConsole.Services
         public string Url { get; set; }
         public string FileName { get; set; }
         public PropertyInfo Property { get; set; }
-
-        public DownloadFile()
-        {
-
-        }
-
-        public DownloadFile(string fileName, string url)
+        public DownloadFile(string fileName, string url, PropertyInfo property)
         {
             FileName = fileName;
             Url = url;
+            Property = property;
         }
         public override string ToString()
         {

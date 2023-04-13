@@ -31,9 +31,7 @@ namespace DesignAutomationConsole.Services
         /// <returns></returns>
         public static IArgument ToJsonArgument<T>(T value)
         {
-            var json = JsonConvert.SerializeObject(value);
-            if (value is string str) json = str;
-            var argument = ToJsonArgument(json);
+            var argument = ToJsonArgument(value.ToJson());
             return argument;
         }
 

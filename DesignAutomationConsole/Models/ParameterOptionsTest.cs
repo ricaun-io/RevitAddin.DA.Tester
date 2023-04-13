@@ -6,10 +6,28 @@ namespace DesignAutomationConsole.Models
     public class ParameterOptionsDownloadTest
     {
         [ParameterInput("output.json", UploadFile = true)]
-        public InputModel Input { get; set; } = new InputModel() { Text = $"Text me {DateTime.Now}!" };
+        public OutputModel Input { get; set; } = new OutputModel() { Text = $"Local OutputModel - {DateTime.Now}!" };
 
         [ParameterOutput("output.json")]
-        public InputModel Output { get; set; }
+        public OutputModel Output { get; set; }
+    }
+
+    public class ParameterOptionsDownloadTest2
+    {
+        [ParameterInput("output.txt", UploadFile = true)]
+        public string Input { get; set; } = "input test string";
+
+        [ParameterOutput("output.txt", DownloadFile = true)]
+        public string Output { get; set; }
+    }
+
+    public class ParameterOptionsDownloadTest3
+    {
+        [ParameterInput("output.json")]
+        public string Input { get; set; } = "input.json";
+
+        [ParameterOutput("output.json")]
+        public OutputModel Output { get; set; }
     }
 
     public class ParameterOptionsTest

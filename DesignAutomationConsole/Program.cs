@@ -76,11 +76,16 @@ namespace DesignAutomationConsole
             //Console.WriteLine("--------");
             //Console.WriteLine("--------");
 
-            await designAutomationService.Run<ParameterOptionsDownloadTest>((parameters) =>
+            //await designAutomationService.Run<ParameterOptionsDownloadTest>();
+
+            var output = await designAutomationService.Run<ParameterOptions>((parameters) =>
             {
 
             });
 
+            Console.WriteLine("--------");
+            Console.WriteLine($"{output.ToJson()}");
+            Console.WriteLine("--------");
 
             return;
 

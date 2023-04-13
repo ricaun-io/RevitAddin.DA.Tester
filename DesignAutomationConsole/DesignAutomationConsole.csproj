@@ -8,7 +8,24 @@
   <ItemGroup>
     <PackageReference Include="ricaun.Autodesk.Forge.Oss" Version="*" />
     <PackageReference Include="Autodesk.Forge.DesignAutomation" Version="*" />
-    
   </ItemGroup>
+
+  <!-- Fody -->
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="5.*" IncludeAssets="build; compile" PrivateAssets="all" />
+  </ItemGroup>
+  <PropertyGroup>
+    <WeaverConfiguration>
+      <Weavers>
+        <Costura CreateTemporaryAssemblies="true" />
+      </Weavers>
+    </WeaverConfiguration>
+    <WeaverConfiguration Condition="$(Configuration.Contains('Debug'))">
+      <Weavers>
+        <Costura IncludeAssemblies="" />
+        <Costura CreateTemporaryAssemblies="true" />
+      </Weavers>
+    </WeaverConfiguration>
+  </PropertyGroup>
 
 </Project>
