@@ -13,9 +13,17 @@ namespace DesignAutomationConsole.Services
         private readonly DesignAutomationService designAutomationService;
         private readonly T obj;
 
+        /// <summary>
+        /// Parameters for DA activity.
+        /// </summary>
         public Dictionary<string, Parameter> Parameters { get; } = new Dictionary<string, Parameter>();
+        /// <summary>
+        /// Arguments for DA workitem.
+        /// </summary>
         public Dictionary<string, IArgument> Arguments { get; } = new Dictionary<string, IArgument>();
-
+        /// <summary>
+        /// Download files for DA workitem when finish.
+        /// </summary>
         public Dictionary<string, string> DownloadFiles { get; } = new Dictionary<string, string>();
 
         public ParameterArgumentService(DesignAutomationService designAutomationService, T obj)
@@ -123,7 +131,8 @@ namespace DesignAutomationConsole.Services
             }
         }
 
-        private async Task<string> CreateOssBucketKey(string fileName)
+        #region Oss
+        private async Task<string> CreateOssBucketKey()
         {
             var nickname = await designAutomationService.GetNicknameAsync();
             var bucketKey = nickname.ToLower() + "_" + designAutomationService.AppName.ToLower();
@@ -135,7 +144,7 @@ namespace DesignAutomationConsole.Services
         private async Task<string> UploadFile(string localFullName, string name, string engine = null)
         {
             var fileName = name + engine;
-            var bucketKey = await CreateOssBucketKey(fileName);
+            var bucketKey = await CreateOssBucketKey();
             var objectDetails = await designAutomationService.OssClient.UploadFileAsync(bucketKey, fileName, localFullName);
             return await designAutomationService.OssClient.CreateSignedFileAsync(bucketKey, fileName);
         }
@@ -143,17 +152,19 @@ namespace DesignAutomationConsole.Services
         private async Task<string> CreateWrite(string name, string engine = null)
         {
             var fileName = name + engine;
-            var bucketKey = await CreateOssBucketKey(fileName);
+            var bucketKey = await CreateOssBucketKey();
             return await designAutomationService.OssClient.CreateSignedFileWriteAsync(bucketKey, fileName);
         }
 
         private async Task<string> CreateReadWrite(string name, string engine = null)
         {
             var fileName = name + engine;
-            var bucketKey = await CreateOssBucketKey(fileName);
+            var bucketKey = await CreateOssBucketKey();
             return await designAutomationService.OssClient.CreateSignedFileAsync(bucketKey, fileName, "readwrite");
         }
+        #endregion
 
+        #region Utils
         class StringUtils
         {
             public static string ConvertUpperToUnderscore(string inputString)
@@ -201,5 +212,7 @@ namespace DesignAutomationConsole.Services
                 return Uri.TryCreate(url, UriKind.Absolute, out var uri);
             }
         }
+
+        #endregion
     }
 }

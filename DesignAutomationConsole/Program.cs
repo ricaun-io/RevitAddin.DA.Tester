@@ -91,8 +91,8 @@ namespace DesignAutomationConsole
             //await designAutomationService.CreateNicknameAsync("ricaun2");
 
             var appBundleFilePath = await RequestService.GetFileAsync(RequestUri);
-            //await designAutomationService.Initialize(appBundleFilePath);
-            //await CreateWorkItem(designAutomationService);
+            await designAutomationService.Initialize(appBundleFilePath);
+            await CreateWorkItem(designAutomationService);
 
 
 

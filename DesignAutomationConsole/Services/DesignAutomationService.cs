@@ -470,17 +470,21 @@ namespace DesignAutomationConsole.Services
         {
             return Task.Run(GetNicknameAsync).GetAwaiter().GetResult();
         }
+        private string nickname;
         public async Task<string> GetNicknameAsync()
         {
-            return await this.designAutomationClient.GetNicknameAsync("me");
+            nickname = nickname ?? await this.designAutomationClient.GetNicknameAsync("me");
+            return nickname;
         }
         public async Task CreateNicknameAsync(string name)
         {
+            nickname = null;
             NicknameRecord nicknameRecord = new NicknameRecord() { Nickname = name };
             await this.designAutomationClient.CreateNicknameAsync("me", nicknameRecord);
         }
         public async Task DeleteForgeAppAsync()
         {
+            nickname = null;
             await this.designAutomationClient.DeleteForgeAppAsync("me");
         }
         #endregion
