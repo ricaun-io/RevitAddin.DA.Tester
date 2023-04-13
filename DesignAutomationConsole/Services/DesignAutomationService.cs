@@ -96,27 +96,27 @@ namespace DesignAutomationConsole.Services
             var parameterArgumentService = new ParameterArgumentService<T>(this, options);
             await parameterArgumentService.Initialize();
 
-            //Console.WriteLine("------------------------");
-            //Console.WriteLine($"Parameters");
-            //var activityParameters = parameterArgumentService.Parameters;
-            //foreach (var item in activityParameters)
-            //{
-            //    Console.WriteLine($"{item.Key} {item.Value}");
-            //}
+            Console.WriteLine("------------------------");
+            Console.WriteLine($"Parameters");
+            var activityParameters = parameterArgumentService.Parameters;
+            foreach (var item in activityParameters)
+            {
+                Console.WriteLine($"{item.Key} {item.Value}");
+            }
 
-            //Console.WriteLine($"Arguments");
-            //var workItemArguments = parameterArgumentService.Arguments;
-            //foreach (var item in workItemArguments)
-            //{
-            //    Console.WriteLine($"{item.Key} {item.Value}");
-            //}
+            Console.WriteLine($"Arguments");
+            var workItemArguments = parameterArgumentService.Arguments;
+            foreach (var item in workItemArguments)
+            {
+                Console.WriteLine($"{item.Key} {item.Value}");
+            }
 
-            //var downloads = parameterArgumentService.DownloadFiles;
-            //foreach (var download in downloads)
-            //{
-            //    Console.WriteLine($"DownloadFiles: {download}");
-            //}
-            //Console.WriteLine("------------------------");
+            var downloads = parameterArgumentService.DownloadFiles;
+            foreach (var download in downloads)
+            {
+                Console.WriteLine($"DownloadFiles: {download}");
+            }
+            Console.WriteLine("------------------------");
 
             return await parameterArgumentService.Finalize();
         }

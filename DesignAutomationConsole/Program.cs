@@ -80,8 +80,13 @@ namespace DesignAutomationConsole
 
             var output = await designAutomationService.Run<ParameterOptions>((parameters) =>
             {
-
+                parameters.Input = new InputModel() { Text = $"Hello youtube!" };
             });
+
+            //var output = await designAutomationService.Run<ParameterOptionsFile>((parameters) =>
+            //{
+            //    parameters.Input = "input.json";
+            //});
 
             Console.WriteLine("--------");
             Console.WriteLine($"{output.ToJson()}");
