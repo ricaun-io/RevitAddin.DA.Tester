@@ -33,8 +33,8 @@ namespace DesignAutomationConsole.Services
 
         public override string[] CoreEngineVersions()
         {
-            return new[] { "2021" };
-            //return new[] { "2018", "2019", "2020", "2021", "2022", "2023" };
+            return new[] { "2021", "2022", "2023", "2024" };
+            //return new[] { "2019", "2020", "2021", "2022", "2023" };
         }
 
         protected override void CoreCreateActivity(Activity activity)
@@ -89,16 +89,8 @@ namespace DesignAutomationConsole.Services
             if (appBundleDeleted.Any())
                 Console.WriteLine($"\tDeleted AppBundles: {string.Join(" ", appBundleDeleted)}");
 
-            foreach (var engine in CoreEngineVersions())
-            {
-                var activity = await CreateActivityAsync(engine);
-                Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
-                var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
-                if (activityDeleted.Any())
-                    Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");
-            }
-        }
 
+        }
 
 
         public async Task DeleteAppBundleAndActivities()

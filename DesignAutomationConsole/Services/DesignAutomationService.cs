@@ -84,18 +84,63 @@ namespace DesignAutomationConsole.Services
 
         #endregion
 
-        public async Task<T> Run<T>(Action<T> options = null) where T : class
+        public async Task<T> Run<T>(int engine) where T : class
+        {
+            return await Run<T>(engine.ToString());
+        }
+
+        public async Task<T> Run<T>(string engine = null) where T : class
+        {
+            return await Run<T>((obj) => { }, engine);
+        }
+
+        public async Task<T> Run<T>(Action<T> options, string engine = null) where T : class
         {
             var instance = Activator.CreateInstance<T>();
             options?.Invoke(instance);
-            return await Run(instance);
+            return await Run(instance, engine);
         }
 
-        public async Task<T> Run<T>(T options) where T : class
+        public async Task<T> Run<T>(T options, string engine = null) where T : class
         {
+            if (string.IsNullOrEmpty(engine)) engine = CoreEngineVersions().FirstOrDefault();
+
+            if (CoreEngineVersions().Contains(engine) == false)
+            {
+                throw new Exception($"Engine '{engine}' not found in the CoreEngineVersions");
+            }
+
             var parameterArgumentService = new ParameterArgumentService<T>(this, options);
             await parameterArgumentService.Initialize();
 
+
+            var activity = await CreateActivityAsync(engine, (activity) =>
+            {
+                activity.Parameters = parameterArgumentService.Parameters;
+            });
+            Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
+            //Console.WriteLine($"Created Activity: {activity.ToJson()}");
+            var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
+            if (activityDeleted.Any())
+                Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");
+
+
+
+            Console.WriteLine($"Created WorkItem: {engine}");
+            var workItem = await CreateWorkItemAsync(engine, (workItem) =>
+            {
+                workItem.Arguments = parameterArgumentService.Arguments;
+            });
+            await WorkItemStatusWait(workItem);
+
+
+            //ConsoleParameter(parameterArgumentService);
+
+            return await parameterArgumentService.Finalize();
+        }
+
+        private static void ConsoleParameter<T>(ParameterArgumentService<T> parameterArgumentService) where T : class
+        {
             Console.WriteLine("------------------------");
             Console.WriteLine($"Parameters");
             var activityParameters = parameterArgumentService.Parameters;
@@ -117,8 +162,6 @@ namespace DesignAutomationConsole.Services
                 Console.WriteLine($"DownloadFiles: {download}");
             }
             Console.WriteLine("------------------------");
-
-            return await parameterArgumentService.Finalize();
         }
 
         #region Get
@@ -264,7 +307,6 @@ namespace DesignAutomationConsole.Services
         #endregion
 
         #region BundleVersion
-
         public async Task<IEnumerable<int>> GetAppBundleVersionsAsync()
         {
             var bundleName = this.GetBundleName(appName);
@@ -322,12 +364,17 @@ namespace DesignAutomationConsole.Services
             return data.OrderBy(e => e);
         }
 
-        public async Task<Activity> CreateActivityAsync(string engine = null)
+        public async Task<Activity> CreateActivityAsync(string engine = null, Action<Activity> settingActivity = null)
         {
+            if (settingActivity is null)
+            {
+                settingActivity = CoreCreateActivity;
+            }
+
             engine = GetDefaultEngine(engine);
 
             string activityName = this.GetActivityName(appName, engine);
-            Activity activity = CreateActivity(appName, engine);
+            Activity activity = CreateActivity(appName, engine, settingActivity);
 
             var activities = await GetAllActivitiesAsync(false);
             string qualifiedId = GetQualifiedId(activityName, false);
@@ -344,7 +391,7 @@ namespace DesignAutomationConsole.Services
             return activity;
         }
 
-        private Activity CreateActivity(string appName, string engine)
+        private Activity CreateActivity(string appName, string engine, Action<Activity> settingActivity = null)
         {
             var bundleName = this.GetBundleName(appName);
             var activityName = this.GetActivityName(appName, engine);
@@ -375,7 +422,8 @@ namespace DesignAutomationConsole.Services
 
             activity.Parameters = new Dictionary<string, Parameter>();
 
-            CoreCreateActivity(activity);
+            //CoreCreateActivity(activity);
+            settingActivity?.Invoke(activity);
 
             return activity;
         }
@@ -423,6 +471,50 @@ namespace DesignAutomationConsole.Services
         {
             await this.designAutomationClient.DeleteWorkItemAsync(id);
         }
+
+        public async Task<WorkItemStatus> CreateWorkItemAsync(string engine = null, Action<WorkItem> settingWorkItem = null)
+        {
+            engine = GetDefaultEngine(engine);
+
+            string activityName = this.GetActivityName(appName, engine);
+            string activityId = this.GetQualifiedId(activityName);
+
+            var workItemBundle = new WorkItem();
+            workItemBundle.ActivityId = activityId;
+
+            workItemBundle.Arguments = new Dictionary<string, IArgument>();
+
+            settingWorkItem?.Invoke(workItemBundle);
+
+            var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
+
+            return status;
+        }
+
+        public async Task WorkItemStatusWait(WorkItemStatus status)
+        {
+            var number = 0;
+            Console.WriteLine($"[{DateTime.Now}]: {status.Id}");
+            while (status.Status == Status.Pending | status.Status == Status.Inprogress)
+            {
+                Console.WriteLine($"[{DateTime.Now}]: {status.Status} | \t{status.GetTimeStarted()}");
+                if (number++ > 120) break;
+                await Task.Delay(10000);
+                status = await this.CheckWorkItemAsync(status.Id);
+            }
+            Console.WriteLine($"[{DateTime.Now}]: {status.Status}");
+            Console.WriteLine($"[{DateTime.Now}]: EstimateCosts: {status.EstimateCosts()}");
+
+            if (status.Status != Status.Success)
+            {
+                Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
+            }
+
+            // Todo: DeleteWorkItem if timeout
+
+            //Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
+        }
+
 
         public async Task<WorkItemStatus> CreateWorkItemAsync(string engine,
             params object[] arguments)

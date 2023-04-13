@@ -41,5 +41,22 @@ namespace DesignAutomationConsole.Services
             }
             return costs * costMultiplier;
         }
+
+        /// <summary>
+        /// Get Time based in the TimeDownloadStarted
+        /// </summary>
+        /// <param name="workItemStatus"></param>
+        /// <returns></returns>
+        public static DateTime GetTimeStarted(this WorkItemStatus workItemStatus)
+        {
+            if (workItemStatus.Stats is Statistics statistics)
+            {
+                if (statistics.TimeDownloadStarted is DateTime started)
+                {
+                    return started;
+                }
+            }
+            return DateTime.MinValue;
+        }
     }
 }

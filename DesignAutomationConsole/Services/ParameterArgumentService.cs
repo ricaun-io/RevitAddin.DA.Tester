@@ -120,18 +120,18 @@ namespace DesignAutomationConsole.Services
                 var fileName = downloadFile.FileName;
                 try
                 {
-                    Console.WriteLine($"DownloadFile: {fileName} {downloadFile.Property}");
+                    //Console.WriteLine($"DownloadFile: {fileName} {downloadFile.Property}");
 
                     if (!PropertyUtils.IsPropertyTypeString(downloadFile.Property))
                     {
                         var jsonObject = await RequestService.Instance.GetJsonAsync(downloadFile.Url, downloadFile.Property.PropertyType);
-                        Console.WriteLine($"DownloadJson: {jsonObject}");
+                        //Console.WriteLine($"DownloadJson: {jsonObject}");
                         downloadFile.Property.SetValue(obj, jsonObject);
                     }
                     else
                     {
                         var filePath = await RequestService.Instance.GetFileAsync(downloadFile.Url, fileName);
-                        Console.WriteLine($"DownloadFile: {filePath}");
+                        //Console.WriteLine($"DownloadFile: {filePath}");
                         downloadFile.Property.SetValue(obj, filePath);
                     }
                 }

@@ -54,6 +54,7 @@ namespace DesignAutomationConsole
 
             var designAutomationService = new RevitDesignAutomationService(appName);
 
+            //await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
 
             //var parameters = new ParameterOptionsTest()
             //{
@@ -78,19 +79,40 @@ namespace DesignAutomationConsole
 
             //await designAutomationService.Run<ParameterOptionsDownloadTest>();
 
-            var output = await designAutomationService.Run<ParameterOptions>((parameters) =>
-            {
-                parameters.Input = new InputModel() { Text = $"Hello youtube!" };
-            });
+            //foreach (var engine in designAutomationService.CoreEngineVersions())
+            //{
+            //    var output = await designAutomationService.Run<ParameterOptions>(engine);
+            //    Console.WriteLine("--------");
+            //    Console.WriteLine($"{output.ToJson()}");
+            //    Console.WriteLine("--------");
+            //}
+
+            var output = await designAutomationService.Run<ParameterOptions>(2021);
+            Console.WriteLine("--------");
+            Console.WriteLine($"{output.ToJson()}");
+            Console.WriteLine("--------");
+
+
+            //await designAutomationService.Run<ParameterOptions>("2022");
+
+            //var output = await designAutomationService.Run<ParameterOptions>((parameters) =>
+            //{
+            //}, "2024");
+
+
+            //var output = await designAutomationService.Run<ParameterOptionsDownload>((parameters) =>
+            //{
+            //    parameters.Input = new InputModel() { Text = $"" };
+            //});
 
             //var output = await designAutomationService.Run<ParameterOptionsFile>((parameters) =>
             //{
             //    parameters.Input = "input.json";
             //});
 
-            Console.WriteLine("--------");
-            Console.WriteLine($"{output.ToJson()}");
-            Console.WriteLine("--------");
+            //Console.WriteLine("--------");
+            //Console.WriteLine($"{output.ToJson()}");
+            //Console.WriteLine("--------");
 
             return;
 
