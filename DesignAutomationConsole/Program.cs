@@ -79,18 +79,18 @@ namespace DesignAutomationConsole
 
             //await designAutomationService.Run<ParameterOptionsDownloadTest>();
 
-            //foreach (var engine in designAutomationService.CoreEngineVersions())
-            //{
-            //    var output = await designAutomationService.Run<ParameterOptions>(engine);
-            //    Console.WriteLine("--------");
-            //    Console.WriteLine($"{output.ToJson()}");
-            //    Console.WriteLine("--------");
-            //}
+            foreach (var engine in designAutomationService.CoreEngineVersions().OrderByDescending(e => e))
+            {
+                var output = await designAutomationService.Run<ParameterOptions>(engine);
+                Console.WriteLine("--------");
+                Console.WriteLine($"{output.ToJson()}");
+                Console.WriteLine("--------");
+            }
 
-            var output = await designAutomationService.Run<ParameterOptions>(2021);
-            Console.WriteLine("--------");
-            Console.WriteLine($"{output.ToJson()}");
-            Console.WriteLine("--------");
+            //var output = await designAutomationService.Run<ParameterOptions>(2021);
+            //Console.WriteLine("--------");
+            //Console.WriteLine($"{output.ToJson()}");
+            //Console.WriteLine("--------");
 
 
             //await designAutomationService.Run<ParameterOptions>("2022");

@@ -113,17 +113,22 @@ namespace DesignAutomationConsole.Services
             var parameterArgumentService = new ParameterArgumentService<T>(this, options);
             await parameterArgumentService.Initialize();
 
-
-            var activity = await CreateActivityAsync(engine, (activity) =>
+            try
             {
-                activity.Parameters = parameterArgumentService.Parameters;
-            });
-            Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
-            //Console.WriteLine($"Created Activity: {activity.ToJson()}");
-            var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
-            if (activityDeleted.Any())
-                Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");
-
+                var activity = await CreateActivityAsync(engine, (activity) =>
+                {
+                    activity.Parameters = parameterArgumentService.Parameters;
+                });
+                Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
+                //Console.WriteLine($"Created Activity: {activity.ToJson()}");
+                var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
+                if (activityDeleted.Any())
+                    Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Created Activity Exception: {ex.Message}");
+            }
 
 
             Console.WriteLine($"Created WorkItem: {engine}");
@@ -131,7 +136,7 @@ namespace DesignAutomationConsole.Services
             {
                 workItem.Arguments = parameterArgumentService.Arguments;
             });
-            await WorkItemStatusWait(workItem);
+            await WorkItemStatusWait(workItem, engine);
 
 
             //ConsoleParameter(parameterArgumentService);
@@ -491,7 +496,7 @@ namespace DesignAutomationConsole.Services
             return status;
         }
 
-        public async Task WorkItemStatusWait(WorkItemStatus status)
+        public async Task WorkItemStatusWait(WorkItemStatus status, string engine = null)
         {
             var number = 0;
             Console.WriteLine($"[{DateTime.Now}]: {status.Id}");
@@ -503,11 +508,14 @@ namespace DesignAutomationConsole.Services
                 status = await this.CheckWorkItemAsync(status.Id);
             }
             Console.WriteLine($"[{DateTime.Now}]: {status.Status}");
+            Console.WriteLine($"[{DateTime.Now}]: EstimateTime: {status.EstimateTime()}");
             Console.WriteLine($"[{DateTime.Now}]: EstimateCosts: {status.EstimateCosts()}");
 
+            var report = await CheckWorkItemReportAsync(status.Id);
+            File.WriteAllText($"{engine}_report_{status.Id}.log", $"{report}");
             if (status.Status != Status.Success)
             {
-                Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
+                Console.WriteLine(report);
             }
 
             // Todo: DeleteWorkItem if timeout

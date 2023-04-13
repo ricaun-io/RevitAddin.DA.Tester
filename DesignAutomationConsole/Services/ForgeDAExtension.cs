@@ -15,7 +15,10 @@ namespace DesignAutomationConsole.Services
         /// <returns>The updated <paramref name="workItemStatus"/> with the estimated costs included in the <see cref="WorkItemStatus.Progress"/> property.</returns>
         public static WorkItemStatus ProgressEstimateCosts(this WorkItemStatus workItemStatus)
         {
-            workItemStatus.Progress = $"EstimateCosts: {workItemStatus.EstimateCosts()}";
+            workItemStatus.Progress =
+                $"EstimateTime: {workItemStatus.EstimateTime()}{Environment.NewLine}" +
+                $"EstimateCosts: {workItemStatus.EstimateCosts()}";
+
             return workItemStatus;
         }
 
@@ -27,19 +30,28 @@ namespace DesignAutomationConsole.Services
         /// <returns>The estimated costs for the <paramref name="workItemStatus"/>.</returns>
         public static double EstimateCosts(this WorkItemStatus workItemStatus, double costMultiplier = 2.0)
         {
-            var costs = 0.0;
+            var costs = workItemStatus.EstimateTime().TotalHours;
+            return costs * costMultiplier;
+        }
 
+        /// <summary>
+        /// EstimateTime
+        /// </summary>
+        /// <param name="workItemStatus"></param>
+        /// <returns></returns>
+        public static TimeSpan EstimateTime(this WorkItemStatus workItemStatus)
+        {
             if (workItemStatus.Stats is Statistics statistics)
             {
                 if (statistics.TimeDownloadStarted is DateTime started)
                 {
                     if (statistics.TimeUploadEnded is DateTime ended)
                     {
-                        costs = (ended - started).TotalHours;
+                        return ended - started;
                     }
                 }
             }
-            return costs * costMultiplier;
+            return TimeSpan.Zero;
         }
 
         /// <summary>
