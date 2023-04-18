@@ -14,6 +14,11 @@
   <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="5.*" IncludeAssets="build; compile" PrivateAssets="all" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Bundle\RevitAddin.DA.Tester.bundle.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <PropertyGroup>
     <WeaverConfiguration>
       <Weavers>
@@ -26,6 +31,7 @@
         <Costura CreateTemporaryAssemblies="true" />
       </Weavers>
     </WeaverConfiguration>
+    <AppDesignerFolder>Bundle</AppDesignerFolder>
   </PropertyGroup>
 
 </Project>

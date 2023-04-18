@@ -54,6 +54,8 @@ namespace DesignAutomationConsole
 
             var designAutomationService = new RevitDesignAutomationService(appName);
 
+            //await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
+
             //await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
 
             //var parameters = new ParameterOptionsTest()
@@ -79,13 +81,34 @@ namespace DesignAutomationConsole
 
             //await designAutomationService.Run<ParameterOptionsDownloadTest>();
 
-            foreach (var engine in designAutomationService.CoreEngineVersions().OrderByDescending(e => e))
+            //await designAutomationService.Run<ParameterOptions>(2021);
+
+            //var engineVersions = designAutomationService.CoreEngineVersions().OrderByDescending(e => e);
+
+            var engineVersions = designAutomationService.CoreEngineVersions();
+            foreach (var engine in engineVersions)
             {
                 var output = await designAutomationService.Run<ParameterOptions>(engine);
                 Console.WriteLine("--------");
                 Console.WriteLine($"{output.ToJson()}");
                 Console.WriteLine("--------");
             }
+
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    Console.WriteLine($">>>");
+            //    Console.WriteLine($">>> {i}");
+            //    Console.WriteLine($">>>");
+            //    var engineVersions = designAutomationService.CoreEngineVersions();
+            //    foreach (var engine in engineVersions)
+            //    {
+            //        var output = await designAutomationService.Run<ParameterOptions>(engine);
+            //        Console.WriteLine("--------");
+            //        Console.WriteLine($"{output.ToJson()}");
+            //        Console.WriteLine("--------");
+            //    }
+            //}
 
             //var output = await designAutomationService.Run<ParameterOptions>(2021);
             //Console.WriteLine("--------");
