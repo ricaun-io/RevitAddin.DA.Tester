@@ -44,6 +44,7 @@ namespace DesignAutomationConsole
         public static async Task Main(string[] args)
         {
             Console.WriteLine("...");
+
             //var ForgeConfiguration = new ForgeConfiguration()
             //{
             //    ClientId = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_ID"),
@@ -55,8 +56,15 @@ namespace DesignAutomationConsole
             var designAutomationService = new RevitDesignAutomationService(appName);
 
             //await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
-
             //await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
+
+            var engineVersions = designAutomationService.CoreEngineVersions();
+
+            //foreach (var engineVersion in engineVersions)
+            //    await designAutomationService.Run<ParameterOptions>(engineVersion);
+
+            await designAutomationService.Run<ParameterOptions>(2021);
+
 
             //var parameters = new ParameterOptionsTest()
             //{
@@ -81,18 +89,24 @@ namespace DesignAutomationConsole
 
             //await designAutomationService.Run<ParameterOptionsDownloadTest>();
 
+
             //await designAutomationService.Run<ParameterOptions>(2021);
+
+
+
 
             //var engineVersions = designAutomationService.CoreEngineVersions().OrderByDescending(e => e);
 
-            var engineVersions = designAutomationService.CoreEngineVersions();
-            foreach (var engine in engineVersions)
-            {
-                var output = await designAutomationService.Run<ParameterOptions>(engine);
-                Console.WriteLine("--------");
-                Console.WriteLine($"{output.ToJson()}");
-                Console.WriteLine("--------");
-            }
+            //var engineVersions = designAutomationService.CoreEngineVersions();
+            ////engineVersions = new[] { "2021" };
+
+            //foreach (var engine in engineVersions)
+            //{
+            //    var output = await designAutomationService.Run<ParameterOptions>(engine);
+            //    Console.WriteLine("--------");
+            //    Console.WriteLine($"{output.ToJson()}");
+            //    Console.WriteLine("--------");
+            //}
 
 
             //for (int i = 0; i < 10; i++)
@@ -162,9 +176,9 @@ namespace DesignAutomationConsole
 
             //await designAutomationService.CreateNicknameAsync("ricaun2");
 
-            var appBundleFilePath = await RequestService.Instance.GetFileAsync(RequestUri);
-            await designAutomationService.Initialize(appBundleFilePath);
-            await CreateWorkItem(designAutomationService);
+            //var appBundleFilePath = await RequestService.Instance.GetFileAsync(RequestUri);
+            //await designAutomationService.Initialize(appBundleFilePath);
+            //await CreateWorkItem(designAutomationService);
 
 
 

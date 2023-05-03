@@ -33,8 +33,10 @@ namespace DesignAutomationConsole.Services
 
         public override string[] CoreEngineVersions()
         {
-            return new[] { "2021", "2022", "2023", "2024" };
-            //return new[] { "2019", "2020", "2021", "2022", "2023" };
+            return new[] {
+                //"2019", "2020",
+                "2021", "2022",
+                "2023", "2024" };
         }
 
         protected override void CoreCreateActivity(Activity activity)

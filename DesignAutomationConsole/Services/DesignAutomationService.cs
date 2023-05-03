@@ -113,22 +113,22 @@ namespace DesignAutomationConsole.Services
             var parameterArgumentService = new ParameterArgumentService<T>(this, options);
             await parameterArgumentService.Initialize();
 
-            try
+            //try
+            //{
+            var activity = await CreateActivityAsync(engine, (activity) =>
             {
-                var activity = await CreateActivityAsync(engine, (activity) =>
-                {
-                    activity.Parameters = parameterArgumentService.Parameters;
-                });
-                Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
-                //Console.WriteLine($"Created Activity: {activity.ToJson()}");
-                var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
-                if (activityDeleted.Any())
-                    Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Created Activity Exception: {ex.Message}");
-            }
+                activity.Parameters = parameterArgumentService.Parameters;
+            });
+            Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
+            //Console.WriteLine($"Created Activity: {activity.ToJson()}");
+            var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
+            if (activityDeleted.Any())
+                Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Created Activity Exception: {ex.Message}");
+            //}
 
 
             Console.WriteLine($"Created WorkItem: {engine}");
