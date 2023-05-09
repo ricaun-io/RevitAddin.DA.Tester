@@ -113,6 +113,19 @@ namespace DesignAutomationConsole.Services
             }
         }
 
+        public void UpdateActivity(Activity activity)
+        {
+            foreach (var property in obj.GetType().GetProperties())
+            {
+                var value = property.GetValue(obj);
+                var name = StringUtils.ConvertUpperToUnderscore(property.Name);
+                if (property.TryGetAttribute(out ParameterActivityAttribute parameterActivity))
+                {
+                    parameterActivity.UpdateActivity(activity, name, value);
+                }
+            }
+        }
+
         public async Task<T> Finalize()
         {
             foreach (var downloadFile in DownloadFiles)

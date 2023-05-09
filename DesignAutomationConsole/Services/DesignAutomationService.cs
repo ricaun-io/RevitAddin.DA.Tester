@@ -118,9 +118,11 @@ namespace DesignAutomationConsole.Services
             var activity = await CreateActivityAsync(engine, (activity) =>
             {
                 activity.Parameters = parameterArgumentService.Parameters;
+                parameterArgumentService.UpdateActivity(activity);
             });
             Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
-            //Console.WriteLine($"Created Activity: {activity.ToJson()}");
+            Console.WriteLine($"Created Activity: {activity.ToJson()}");
+
             var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
             if (activityDeleted.Any())
                 Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");

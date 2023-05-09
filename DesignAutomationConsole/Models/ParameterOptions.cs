@@ -12,6 +12,9 @@ namespace DesignAutomationConsole.Models
         [ParameterOutput("output.json",
             Description = "Output file.")]
         public OutputModel Output { get; set; }
+
+        [ParameterActivityLanguage]
+        public string Language { get; set; } = "DEU";
     }
 
     public class ParameterOptionsDownload
