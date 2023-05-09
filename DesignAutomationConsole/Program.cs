@@ -60,10 +60,10 @@ namespace DesignAutomationConsole
 
             var engineVersions = designAutomationService.CoreEngineVersions();
 
-            //foreach (var engineVersion in engineVersions)
-            //    await designAutomationService.Run<ParameterOptions>(engineVersion);
+            foreach (var engineVersion in engineVersions)
+                await designAutomationService.Run<ParameterOptions>(engineVersion);
 
-            await designAutomationService.Run<ParameterOptions>(2021);
+            //await designAutomationService.Run<ParameterOptions>(2021);
 
 
             //var parameters = new ParameterOptionsTest()
