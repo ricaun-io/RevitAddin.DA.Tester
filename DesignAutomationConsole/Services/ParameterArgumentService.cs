@@ -45,7 +45,7 @@ namespace DesignAutomationConsole.Services
                 var name = StringUtils.ConvertUpperToUnderscore(property.Name);
                 if (property.TryGetAttribute(out ParameterInputAttribute parameterInput))
                 {
-                    var localName = parameterInput.Name;
+                    var localName = parameterInput.LocalName;
                     var uploadFileName = localName;
 
                     var inputParam = parameterInput.ToParameter();
@@ -78,7 +78,7 @@ namespace DesignAutomationConsole.Services
                 }
                 else if (property.TryGetAttribute(out ParameterOutputAttribute parameterOutput))
                 {
-                    var localName = parameterOutput.Name;
+                    var localName = parameterOutput.LocalName;
                     var downloadFileName = localName;
 
                     var outputParam = parameterOutput.ToParameter();

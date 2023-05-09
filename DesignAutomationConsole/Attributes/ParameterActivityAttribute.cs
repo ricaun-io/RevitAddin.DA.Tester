@@ -3,6 +3,29 @@ using System;
 
 namespace DesignAutomationConsole.Attributes
 {
+    public class ParameterActivityInputArgumentAttribute : ParameterActivityInputAttribute
+    {
+        public ParameterActivityInputArgumentAttribute() : base("") { }
+    }
+    public class ParameterActivityInputOpenAttribute : ParameterActivityInputAttribute
+    {
+        public ParameterActivityInputOpenAttribute() : base("/i") { }
+    }
+    public class ParameterActivityInputAttribute : ParameterActivityAttribute
+    {
+        private readonly string command;
+
+        public ParameterActivityInputAttribute(string command)
+        {
+            this.command = command;
+        }
+        public override Activity UpdateActivity(Activity activity, string name, object value)
+        {
+            activity.CommandLine[0] += $" {command} \"$(args[{name}].path)\"";
+
+            return base.UpdateActivity(activity, name, value);
+        }
+    }
     public class ParameterActivityLanguageAttribute : ParameterActivityAttribute
     {
         public override Activity UpdateActivity(Activity activity, string name, object value)
@@ -12,16 +35,6 @@ namespace DesignAutomationConsole.Attributes
             return base.UpdateActivity(activity, name, value);
         }
     }
-    public class ParameterActivityInputOpenAttribute : ParameterActivityAttribute
-    {
-        public override Activity UpdateActivity(Activity activity, string name, object value)
-        {
-            activity.CommandLine[0] += $" /i \"$(args[{name}].path)\"";
-
-            return base.UpdateActivity(activity, name, value);
-        }
-    }
-
     public class ParameterActivityScriptAttribute : ParameterActivityAttribute
     {
         public override Activity UpdateActivity(Activity activity, string name, object value)
@@ -33,13 +46,10 @@ namespace DesignAutomationConsole.Attributes
         }
     }
 
+
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class ParameterActivityAttribute : Attribute
     {
-        public ParameterActivityAttribute()
-        {
-
-        }
-
         /// <summary>
         /// UpdateActivity
         /// </summary>

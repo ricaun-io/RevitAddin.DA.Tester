@@ -2,14 +2,35 @@
 
 namespace DesignAutomationConsole.Attributes
 {
+    /// <summary>
+    /// ParameterOutputAttribute
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class ParameterOutputAttribute : Attribute
     {
-        public ParameterOutputAttribute(string name)
+        /// <summary>
+        /// ParameterOutputAttribute
+        /// </summary>
+        /// <param name="localName"></param>
+        public ParameterOutputAttribute(string localName)
         {
-            Name = name;
+            LocalName = localName;
         }
-        public string Name { get; set; }
+        /// <summary>
+        /// Local Name
+        /// </summary>
+        public string LocalName { get; set; }
+        /// <summary>
+        /// Description
+        /// </summary>
         public string Description { get; set; }
+        /// <summary>
+        /// Force to Download File
+        /// </summary>
         public bool DownloadFile { get; set; } = false;
+        /// <summary>
+        /// Zipe
+        /// </summary>
+        public bool Zip { get; set; } = false;
     }
 }

@@ -79,10 +79,38 @@ namespace DesignAutomationConsole.Services
         public abstract string[] CoreEngineVersions();
         public abstract string CoreEngine();
         public abstract string CoreConsoleExe();
-        protected abstract void CoreCreateActivity(Activity activity);
-        protected abstract void CoreCreateWorkItem(WorkItem workItemBundle, object[] arguments);
+        //protected abstract void CoreCreateActivity(Activity activity);
+        //protected abstract void CoreCreateWorkItem(WorkItem workItemBundle, object[] arguments);
 
         #endregion
+
+        public async Task Initialize(string packagePath)
+        {
+            var appBundle = await CreateAppBundleAsync(packagePath);
+            Console.WriteLine($"Created AppBundle Id: {appBundle.Id} {appBundle.Version}");
+            var appBundleDeleted = await DeleteNotUsedAppBundleVersionsAsync();
+            if (appBundleDeleted.Any())
+                Console.WriteLine($"\tDeleted AppBundles: {string.Join(" ", appBundleDeleted)}");
+        }
+
+        public async Task DeleteAppBundleAndActivities()
+        {
+            try
+            {
+                await DeleteAppBundleAsync();
+                Console.WriteLine($"Deleted AppBundle: {AppName}");
+            }
+            catch { }
+            foreach (var engine in CoreEngineVersions())
+            {
+                try
+                {
+                    await DeleteActivity(engine);
+                    Console.WriteLine($"Deleted Activity: {engine}");
+                }
+                catch { }
+            }
+        }
 
         public async Task<T> Run<T>(int engine) where T : class
         {
@@ -146,30 +174,30 @@ namespace DesignAutomationConsole.Services
             return await parameterArgumentService.Finalize();
         }
 
-        private static void ConsoleParameter<T>(ParameterArgumentService<T> parameterArgumentService) where T : class
-        {
-            Console.WriteLine("------------------------");
-            Console.WriteLine($"Parameters");
-            var activityParameters = parameterArgumentService.Parameters;
-            foreach (var item in activityParameters)
-            {
-                Console.WriteLine($"{item.Key} {item.Value}");
-            }
+        //private static void ConsoleParameter<T>(ParameterArgumentService<T> parameterArgumentService) where T : class
+        //{
+        //    Console.WriteLine("------------------------");
+        //    Console.WriteLine($"Parameters");
+        //    var activityParameters = parameterArgumentService.Parameters;
+        //    foreach (var item in activityParameters)
+        //    {
+        //        Console.WriteLine($"{item.Key} {item.Value}");
+        //    }
 
-            Console.WriteLine($"Arguments");
-            var workItemArguments = parameterArgumentService.Arguments;
-            foreach (var item in workItemArguments)
-            {
-                Console.WriteLine($"{item.Key} {item.Value}");
-            }
+        //    Console.WriteLine($"Arguments");
+        //    var workItemArguments = parameterArgumentService.Arguments;
+        //    foreach (var item in workItemArguments)
+        //    {
+        //        Console.WriteLine($"{item.Key} {item.Value}");
+        //    }
 
-            var downloads = parameterArgumentService.DownloadFiles;
-            foreach (var download in downloads)
-            {
-                Console.WriteLine($"DownloadFiles: {download}");
-            }
-            Console.WriteLine("------------------------");
-        }
+        //    var downloads = parameterArgumentService.DownloadFiles;
+        //    foreach (var download in downloads)
+        //    {
+        //        Console.WriteLine($"DownloadFiles: {download}");
+        //    }
+        //    Console.WriteLine("------------------------");
+        //}
 
         #region Get
         private string GetQualifiedId(string packageName, bool enviromentEnable = true)
@@ -209,7 +237,8 @@ namespace DesignAutomationConsole.Services
         {
             if (DefaultEngine is null)
             {
-                var engine = Task.Run(() => GetEngineAsync(CoreEngine())).GetAwaiter().GetResult();
+                var engine_version = CoreEngine() + "+" + CoreEngineVersions().FirstOrDefault();
+                var engine = Task.Run(() => GetEngineAsync(engine_version)).GetAwaiter().GetResult();
                 if (engine is null)
                 {
                     throw new Exception($"Engine '{CoreEngine()}' not found!");
@@ -373,10 +402,10 @@ namespace DesignAutomationConsole.Services
 
         public async Task<Activity> CreateActivityAsync(string engine = null, Action<Activity> settingActivity = null)
         {
-            if (settingActivity is null)
-            {
-                settingActivity = CoreCreateActivity;
-            }
+            //if (settingActivity is null)
+            //{
+            //    settingActivity = CoreCreateActivity;
+            //}
 
             engine = GetDefaultEngine(engine);
 
@@ -427,6 +456,7 @@ namespace DesignAutomationConsole.Services
             //    { "script", new StringSetting() { Value = script } }
             //};
 
+            activity.Settings = new Dictionary<string, ISetting>();
             activity.Parameters = new Dictionary<string, Parameter>();
 
             //CoreCreateActivity(activity);
@@ -526,25 +556,25 @@ namespace DesignAutomationConsole.Services
         }
 
 
-        public async Task<WorkItemStatus> CreateWorkItemAsync(string engine,
-            params object[] arguments)
-        {
-            engine = GetDefaultEngine(engine);
+        //public async Task<WorkItemStatus> CreateWorkItemAsync(string engine,
+        //    params object[] arguments)
+        //{
+        //    engine = GetDefaultEngine(engine);
 
-            string activityName = this.GetActivityName(appName, engine);
-            string activityId = this.GetQualifiedId(activityName);
+        //    string activityName = this.GetActivityName(appName, engine);
+        //    string activityId = this.GetQualifiedId(activityName);
 
-            var workItemBundle = new WorkItem();
-            workItemBundle.ActivityId = activityId;
+        //    var workItemBundle = new WorkItem();
+        //    workItemBundle.ActivityId = activityId;
 
-            workItemBundle.Arguments = new Dictionary<string, IArgument>();
+        //    workItemBundle.Arguments = new Dictionary<string, IArgument>();
 
-            CoreCreateWorkItem(workItemBundle, arguments);
+        //    CoreCreateWorkItem(workItemBundle, arguments);
 
-            var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
+        //    var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
 
-            return status;
-        }
+        //    return status;
+        //}
 
 
         public async Task<WorkItemStatus> CheckWorkItemAsync(string id)
@@ -605,6 +635,10 @@ namespace DesignAutomationConsole.Services
         public async Task<Engine> GetEngineAsync(string startWith)
         {
             var engines = await GetEnginesAsync();
+            //foreach (var item in engines)
+            //{
+            //    Console.WriteLine(item);
+            //}
             var engineId = engines.OrderByDescending(e => e).FirstOrDefault(e => e.StartsWith(startWith));
             if (engineId is not null)
             {

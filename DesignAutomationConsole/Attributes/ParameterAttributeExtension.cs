@@ -8,7 +8,7 @@ namespace DesignAutomationConsole.Attributes
         {
             return new Parameter()
             {
-                LocalName = parameterInput.Name,
+                LocalName = parameterInput.LocalName,
                 Description = parameterInput.Description,
                 Verb = Verb.Get,
                 Required = parameterInput.Required,
@@ -19,9 +19,10 @@ namespace DesignAutomationConsole.Attributes
         {
             return new Parameter()
             {
-                LocalName = parameterOutput.Name,
+                LocalName = parameterOutput.LocalName,
                 Description = parameterOutput.Description,
                 Verb = Verb.Put,
+                Zip = parameterOutput.Zip,
             };
         }
     }

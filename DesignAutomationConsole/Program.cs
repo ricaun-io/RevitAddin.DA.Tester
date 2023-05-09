@@ -51,6 +51,13 @@ namespace DesignAutomationConsole
             //    ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
             //};
 
+
+
+
+            //await AutoCAD_DA_Test();
+            //await Inventor_DA_Test(); // This fail
+            //await Revit_DA_Test();
+
             var appName = "RevitAddin_DA_Tester";
 
             var designAutomationService = new RevitDesignAutomationService(appName);
@@ -187,128 +194,164 @@ namespace DesignAutomationConsole
             //await CreateActivities(designAutomationService);
         }
 
-        private static async Task CreateWorkItem(
-            RevitDesignAutomationService designAutomationService)
+        private static async Task AutoCAD_DA_Test()
         {
-            var tasks = new List<Task>();
-            foreach (var versionEngine in designAutomationService.CoreEngineVersions())
+            var service = new AutoCADDesignAutomationService("ListLayers");
+            //await service.Initialize(@"C:\Users\ricau\Downloads\DA\DA4ACAD\ListLayers.zip");
+            await service.Run<AutoCADParameterOptions>(options =>
             {
-                var input = "{\"Text\": \"Hello World.\"}";
-                var task = designAutomationService.SendWorkItemAndGetResponse(versionEngine, input);
-                tasks.Add(task);
-            }
-            await Task.WhenAll(tasks);
+                options.InputDwg = @"C:\Users\ricau\Downloads\DA\DA4ACAD\ListLayers.dwg";
+                options.Script = "(command \"LISTLAYERS\")\n";
+            });
         }
 
-        private static async Task CreateActivities(
-        DesignAutomationService designAutomationService)
+        private static async Task Inventor_DA_Test()
         {
-            foreach (var versionEngine in designAutomationService.CoreEngineVersions())
+            var service = new InventorDesignAutomationService("ChangeParam");
+            await service.Initialize(@"C:\Users\ricau\Downloads\DA\DA4Inventor\samplePlugin.bundle.zip");
+            await service.Run<InventorParameterOptions>(options =>
             {
-                var activity = await designAutomationService.CreateActivityAsync(versionEngine);
-                Console.WriteLine($"Created {activity.Id} {activity.Version}");
-                Console.WriteLine(activity);
-
-                //var versions = await designAutomationService.GetActivityVersionsAsync(appName, versionEngine);
-                //foreach (var version in versions)
-                //{
-                //    Console.WriteLine($"Activity {appName} - {version}");
-                //}
-
-                var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(versionEngine);
-                Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
-            }
-
-            var activities = await designAutomationService.GetAllActivitiesAsync();
-            foreach (var item in activities.Where(e => e.Contains(designAutomationService.AppName)))
-            {
-                Console.WriteLine(item);
-            }
+                options.InventorDoc = @"C:\Users\ricau\Downloads\DA\DA4Inventor\box.ipt";
+                options.InventorParams = new()
+                {
+                    height = "16 in",
+                    width = "10 in"
+                };
+            });
         }
 
-        private static async Task CreateBundles(
-            DesignAutomationService designAutomationService)
+        private static async Task Revit_DA_Test()
         {
-
-            //var name = await designAutomationService.GetNicknameAsync();
-            //Console.WriteLine(name);
-
-            //
-
-
-
-            //Console.WriteLine();
-
-            //var engines = await designAutomationService.GetEnginesAsync();
-            //foreach (var engine in engines)
-            //{
-            //    Console.WriteLine(engine);
-            //}
-
-            var filePath = await RequestService.Instance.GetFileAsync(RequestUri);
-
-
-
-
-            //var engineData = await designAutomationService.GetEngineAsync("Autodesk.Revit");
-            //Console.WriteLine(engineData);
-
-
-            //await designAutomationService.DeleteAppBundleAsync(appName);
-
-
-            for (int i = 0; i < 1; i++)
+            var service = new RevitDesignAutomationService("DeleteWalls");
+            //await service.Initialize(@"C:\Users\ricau\Downloads\DA\DA4Revit\DeleteWalls.zip");
+            await service.Run<RevitParameterOptions>(options =>
             {
-                var appBundle = await designAutomationService.CreateAppBundleAsync(
-                    filePath);
-
-                Console.WriteLine(appBundle);
-            }
-
-            var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync();
-            Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
-
-            Console.WriteLine("-------------");
-
-            var bundlesNames = await designAutomationService.GetAllBundlesAsync();
-            foreach (var bundlesName in bundlesNames)
-            {
-                Console.WriteLine(bundlesName);
-            }
-
-            Console.WriteLine("-------------");
-
-            var versions = await designAutomationService.GetAppBundleVersionsAsync();
-            foreach (var version in versions)
-            {
-                Console.WriteLine($"{designAutomationService.AppName}\t {version}");
-            }
-
-            //Console.WriteLine("-------------");
-            //var app = await designAutomationService.GetBundleAsync(appName);
-            //Console.WriteLine(app);
-            //await RequestService.GetFileAsync(app.Package, "package.zip");
-
-            Console.WriteLine("-------------");
-
-            //await designAutomationService.DeleteOldAppBundleVersionsAsync(appName);
-
-
-            //var bundlesNames = await designAutomationService.GetAllBundlesAsync();
-            //foreach (var bundlesName in bundlesNames)
-            //{
-            //    var id = GetName(bundlesName);
-            //    Console.WriteLine(bundlesName);
-            //    Console.WriteLine(id);
-            //    var versions = await designAutomationService.GetAppBundleVersionsAsync(id);
-
-            //    foreach (var version in versions)
-            //    {
-            //        Console.WriteLine($"\t {version}");
-            //    }
-            //}
-
+                options.RvtFile = @"C:\Users\ricau\Downloads\DA\DA4Revit\DeleteWalls2021.rvt";
+            });
         }
+
+        //private static async Task CreateWorkItem(
+        //    RevitDesignAutomationService designAutomationService)
+        //{
+        //    var tasks = new List<Task>();
+        //    foreach (var versionEngine in designAutomationService.CoreEngineVersions())
+        //    {
+        //        var input = "{\"Text\": \"Hello World.\"}";
+        //        var task = designAutomationService.SendWorkItemAndGetResponse(versionEngine, input);
+        //        tasks.Add(task);
+        //    }
+        //    await Task.WhenAll(tasks);
+        //}
+
+        //private static async Task CreateActivities(
+        //DesignAutomationService designAutomationService)
+        //{
+        //    foreach (var versionEngine in designAutomationService.CoreEngineVersions())
+        //    {
+        //        var activity = await designAutomationService.CreateActivityAsync(versionEngine);
+        //        Console.WriteLine($"Created {activity.Id} {activity.Version}");
+        //        Console.WriteLine(activity);
+
+        //        //var versions = await designAutomationService.GetActivityVersionsAsync(appName, versionEngine);
+        //        //foreach (var version in versions)
+        //        //{
+        //        //    Console.WriteLine($"Activity {appName} - {version}");
+        //        //}
+
+        //        var deleted = await designAutomationService.DeleteNotUsedActivityVersionsAsync(versionEngine);
+        //        Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
+        //    }
+
+        //    var activities = await designAutomationService.GetAllActivitiesAsync();
+        //    foreach (var item in activities.Where(e => e.Contains(designAutomationService.AppName)))
+        //    {
+        //        Console.WriteLine(item);
+        //    }
+        //}
+
+        //private static async Task CreateBundles(
+        //    DesignAutomationService designAutomationService)
+        //{
+
+        //    //var name = await designAutomationService.GetNicknameAsync();
+        //    //Console.WriteLine(name);
+
+        //    //
+
+
+
+        //    //Console.WriteLine();
+
+        //    //var engines = await designAutomationService.GetEnginesAsync();
+        //    //foreach (var engine in engines)
+        //    //{
+        //    //    Console.WriteLine(engine);
+        //    //}
+
+        //    var filePath = await RequestService.Instance.GetFileAsync(RequestUri);
+
+
+
+
+        //    //var engineData = await designAutomationService.GetEngineAsync("Autodesk.Revit");
+        //    //Console.WriteLine(engineData);
+
+
+        //    //await designAutomationService.DeleteAppBundleAsync(appName);
+
+
+        //    for (int i = 0; i < 1; i++)
+        //    {
+        //        var appBundle = await designAutomationService.CreateAppBundleAsync(
+        //            filePath);
+
+        //        Console.WriteLine(appBundle);
+        //    }
+
+        //    var deleted = await designAutomationService.DeleteNotUsedAppBundleVersionsAsync();
+        //    Console.WriteLine($"Deleted not used versions: {string.Join(" ", deleted)}");
+
+        //    Console.WriteLine("-------------");
+
+        //    var bundlesNames = await designAutomationService.GetAllBundlesAsync();
+        //    foreach (var bundlesName in bundlesNames)
+        //    {
+        //        Console.WriteLine(bundlesName);
+        //    }
+
+        //    Console.WriteLine("-------------");
+
+        //    var versions = await designAutomationService.GetAppBundleVersionsAsync();
+        //    foreach (var version in versions)
+        //    {
+        //        Console.WriteLine($"{designAutomationService.AppName}\t {version}");
+        //    }
+
+        //    //Console.WriteLine("-------------");
+        //    //var app = await designAutomationService.GetBundleAsync(appName);
+        //    //Console.WriteLine(app);
+        //    //await RequestService.GetFileAsync(app.Package, "package.zip");
+
+        //    Console.WriteLine("-------------");
+
+        //    //await designAutomationService.DeleteOldAppBundleVersionsAsync(appName);
+
+
+        //    //var bundlesNames = await designAutomationService.GetAllBundlesAsync();
+        //    //foreach (var bundlesName in bundlesNames)
+        //    //{
+        //    //    var id = GetName(bundlesName);
+        //    //    Console.WriteLine(bundlesName);
+        //    //    Console.WriteLine(id);
+        //    //    var versions = await designAutomationService.GetAppBundleVersionsAsync(id);
+
+        //    //    foreach (var version in versions)
+        //    //    {
+        //    //        Console.WriteLine($"\t {version}");
+        //    //    }
+        //    //}
+
+        //}
 
 
     }

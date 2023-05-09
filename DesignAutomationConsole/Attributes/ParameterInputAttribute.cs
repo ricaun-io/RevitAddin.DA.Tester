@@ -2,18 +2,26 @@
 
 namespace DesignAutomationConsole.Attributes
 {
+    /// <summary>
+    /// ParameterInputAttribute
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class ParameterInputAttribute : Attribute
     {
-        public ParameterInputAttribute(string name)
+        /// <summary>
+        /// ParameterInputAttribute
+        /// </summary>
+        /// <param name="localName"></param>
+        public ParameterInputAttribute(string localName)
         {
-            Name = name;
+            LocalName = localName;
         }
         /// <summary>
-        /// Provides default name of the file or folder on the processing server for this parameter. Note this name may be overriden in various ways.
+        /// Local Name
         /// </summary>
-        public string Name { get; set; }
+        public string LocalName { get; set; }
         /// <summary>
-        /// The description of the parameter.
+        /// Description
         /// </summary>
         public string Description { get; set; }
         /// <summary>
