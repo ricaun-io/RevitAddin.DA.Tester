@@ -25,6 +25,20 @@ namespace DesignAutomationConsole.Models
         public string Script { get; set; }
     }
 
+    public class MaxParameterOptions
+    {
+        [ParameterActivityClearBundle]
+        [ParameterActivityInput("-sceneFile")]
+        [ParameterInput("workingFolder", Required = true, ZipPath = "sceneName.max")]
+        public string InputMaxScene { get; set; }
+        [ParameterActivityInputArgument]
+        [ParameterInput("maxscriptToExecute.ms")]
+        public string MaxscriptToExecute { get; set; }
+
+        [ParameterOutput("workingFolder", DownloadFile = true, Zip = true)]
+        public string OutputZip { get; set; }
+    }
+
     public class InventorParameterOptions
     {
         [ParameterActivityInputOpen]
@@ -36,8 +50,8 @@ namespace DesignAutomationConsole.Models
 
         [ParameterOutput("ResultSmall.ipt", DownloadFile = true)]
         public string OutputIpt { get; set; }
-        [ParameterOutput("ResultSmall.zip", DownloadFile = true)]
-        public string OutputIam { get; set; }
+        //[ParameterOutput("ResultSmall.zip", DownloadFile = true)]
+        //public string OutputIam { get; set; }
         [ParameterOutput("ResultSmall.bmp", DownloadFile = true)]
         public string OutputBmp { get; set; }
 

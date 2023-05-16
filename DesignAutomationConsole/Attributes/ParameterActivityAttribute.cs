@@ -1,8 +1,21 @@
 ﻿using Autodesk.Forge.DesignAutomation.Model;
 using System;
+using System.Linq;
 
 namespace DesignAutomationConsole.Attributes
 {
+    public class ParameterActivityClearBundleAttribute : ParameterActivityAttribute
+    {
+        public override Activity UpdateActivity(Activity activity, string name, object value)
+        {
+            var commandLine = "/al";
+            if (activity.CommandLine.Remove(activity.CommandLine.FirstOrDefault(e => e.StartsWith(commandLine))))
+            {
+                activity.Appbundles.Clear();
+            }
+            return base.UpdateActivity(activity, name, value);
+        }
+    }
     public class ParameterActivityInputArgumentAttribute : ParameterActivityInputAttribute
     {
         public ParameterActivityInputArgumentAttribute() : base("") { }
@@ -21,7 +34,8 @@ namespace DesignAutomationConsole.Attributes
         }
         public override Activity UpdateActivity(Activity activity, string name, object value)
         {
-            activity.CommandLine[0] += $" {command} \"$(args[{name}].path)\"";
+            var commandLine = $"{command} \"$(args[{name}].path)\"";
+            activity.CommandLine.Add(commandLine);
 
             return base.UpdateActivity(activity, name, value);
         }
@@ -30,7 +44,8 @@ namespace DesignAutomationConsole.Attributes
     {
         public override Activity UpdateActivity(Activity activity, string name, object value)
         {
-            activity.CommandLine[0] += $" /l {value}";
+            var commandLine = $"/l {value}";
+            activity.CommandLine.Add(commandLine);
 
             return base.UpdateActivity(activity, name, value);
         }
@@ -39,7 +54,8 @@ namespace DesignAutomationConsole.Attributes
     {
         public override Activity UpdateActivity(Activity activity, string name, object value)
         {
-            activity.CommandLine[0] += $" /s \"$(settings[{name}].path)\"";
+            var commandLine = $"/s \"$(settings[{name}].path)\"";
+            activity.CommandLine.Add(commandLine);
             activity.Settings[name] = new StringSetting() { Value = value.ToString() };
 
             return base.UpdateActivity(activity, name, value);

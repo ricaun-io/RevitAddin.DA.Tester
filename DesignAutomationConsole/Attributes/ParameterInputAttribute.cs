@@ -32,5 +32,9 @@ namespace DesignAutomationConsole.Attributes
         /// UploadFile
         /// </summary>
         public bool UploadFile { get; set; } = false;
+        /// <summary>
+        /// Relative File Path inside Zip 
+        /// </summary>
+        public string ZipPath { get; set; }
     }
 }

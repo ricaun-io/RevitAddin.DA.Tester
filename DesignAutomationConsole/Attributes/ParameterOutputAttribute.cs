@@ -29,7 +29,7 @@ namespace DesignAutomationConsole.Attributes
         /// </summary>
         public bool DownloadFile { get; set; } = false;
         /// <summary>
-        /// Zipe
+        /// Zip
         /// </summary>
         public bool Zip { get; set; } = false;
     }

@@ -74,12 +74,24 @@ namespace DesignAutomationConsole.Services
                         }
                     }
 
+                    // Add ZipPath Feature
+                    if (string.IsNullOrEmpty(parameterInput.ZipPath) == false)
+                    {
+                        if (inputArgument is XrefTreeArgument argument)
+                        {
+                            argument.PathInZip = parameterInput.ZipPath;
+                        }
+                    }
+
                     Arguments.Add(name, inputArgument);
                 }
                 else if (property.TryGetAttribute(out ParameterOutputAttribute parameterOutput))
                 {
                     var localName = parameterOutput.LocalName;
                     var downloadFileName = localName;
+
+                    if (parameterOutput.Zip)
+                        downloadFileName += ".zip";
 
                     var outputParam = parameterOutput.ToParameter();
                     Parameters.Add(name, outputParam);
@@ -119,10 +131,14 @@ namespace DesignAutomationConsole.Services
             {
                 var value = property.GetValue(obj);
                 var name = StringUtils.ConvertUpperToUnderscore(property.Name);
-                if (property.TryGetAttribute(out ParameterActivityAttribute parameterActivity))
+                foreach (var parameterActivity in property.GetAttributes<ParameterActivityAttribute>())
                 {
                     parameterActivity.UpdateActivity(activity, name, value);
                 }
+                //if (property.TryGetAttribute(out ParameterActivityAttribute parameterActivity))
+                //{
+                //parameterActivity.UpdateActivity(activity, name, value);
+                //}
             }
         }
 
@@ -133,7 +149,7 @@ namespace DesignAutomationConsole.Services
                 var fileName = downloadFile.FileName;
                 try
                 {
-                    //Console.WriteLine($"DownloadFile: {fileName} {downloadFile.Property}");
+                    Console.WriteLine($"DownloadFile: {fileName} {downloadFile.Property}");
 
                     if (!PropertyUtils.IsPropertyTypeString(downloadFile.Property))
                     {

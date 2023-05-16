@@ -47,4 +47,27 @@ namespace DesignAutomationConsole.Services
             return new[] { "2021", };
         }
     }
+
+    public class MaxDesignAutomationService : DesignAutomationService
+    {
+        public MaxDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null, string forgeEnvironment = "dev") :
+            base(appName, forgeConfiguration, forgeEnvironment)
+        {
+        }
+
+        public override string CoreConsoleExe()
+        {
+            return "3dsmaxbatch.exe";
+        }
+
+        public override string CoreEngine()
+        {
+            return "Autodesk.3dsMax";
+        }
+
+        public override string[] CoreEngineVersions()
+        {
+            return new[] { "2021", };
+        }
+    }
 }

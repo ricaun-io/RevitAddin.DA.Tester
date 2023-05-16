@@ -433,19 +433,24 @@ namespace DesignAutomationConsole.Services
             var activityName = this.GetActivityName(appName, engine);
             var bundleId = GetQualifiedId(bundleName);
 
-            var commandInput = "";
+            //var commandInput = "";
             //commandInput = $"/i \"$(args[{FILE_PARAM}].path)\"";
-            var commandLanguage = "";
+            //var commandLanguage = "";
             //commandLanguage = $"/l $(args[{"read"}].value)";
+            //var commandLine = $"$(engine.path)\\{CoreConsoleExe()} {commandInput} /al \"$(appbundles[{bundleName}].path)\" {commandLanguage}";
 
-            var commandLine = $"$(engine.path)\\{CoreConsoleExe()} {commandInput} /al \"$(appbundles[{bundleName}].path)\" {commandLanguage}";
+            var commandLine = $"$(engine.path)\\{CoreConsoleExe()} /al \"$(appbundles[{bundleName}].path)\"";
             var script = string.Empty;
 
             var activity = new Activity();
             activity.Id = activityName;
             activity.Description = $"Activity {appName}";
             activity.Appbundles = new List<string>() { bundleId };
-            activity.CommandLine = new List<string>() { commandLine };
+            //activity.CommandLine = new List<string>() { commandLine };
+            activity.CommandLine = new List<string>() {
+                $"$(engine.path)\\{CoreConsoleExe()}",
+                $"/al \"$(appbundles[{bundleName}].path)\""
+            };
             activity.Engine = engine;
 
             //script = $"$(args[{"engine_over"}].value)";
@@ -461,6 +466,8 @@ namespace DesignAutomationConsole.Services
 
             //CoreCreateActivity(activity);
             settingActivity?.Invoke(activity);
+
+            activity.CommandLine = new List<string>() { string.Join(" ", activity.CommandLine) };
 
             return activity;
         }
