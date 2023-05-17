@@ -127,6 +127,7 @@ namespace DesignAutomationConsole.Services
 
         public void UpdateActivity(Activity activity)
         {
+            activity.Parameters = Parameters;
             foreach (var property in obj.GetType().GetProperties())
             {
                 var value = property.GetValue(obj);

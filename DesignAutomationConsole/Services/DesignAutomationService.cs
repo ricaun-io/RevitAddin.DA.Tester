@@ -79,8 +79,6 @@ namespace DesignAutomationConsole.Services
         public abstract string[] CoreEngineVersions();
         public abstract string CoreEngine();
         public abstract string CoreConsoleExe();
-        //protected abstract void CoreCreateActivity(Activity activity);
-        //protected abstract void CoreCreateWorkItem(WorkItem workItemBundle, object[] arguments);
 
         #endregion
 
@@ -111,6 +109,8 @@ namespace DesignAutomationConsole.Services
                 catch { }
             }
         }
+
+        #region Run
 
         public async Task<T> Run<T>(int engine) where T : class
         {
@@ -145,7 +145,6 @@ namespace DesignAutomationConsole.Services
             //{
             var activity = await CreateActivityAsync(engine, (activity) =>
             {
-                activity.Parameters = parameterArgumentService.Parameters;
                 parameterArgumentService.UpdateActivity(activity);
             });
             Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
@@ -162,11 +161,12 @@ namespace DesignAutomationConsole.Services
 
 
             Console.WriteLine($"Created WorkItem: {engine}");
-            var workItem = await CreateWorkItemAsync(engine, (workItem) =>
+            var workItemStatus = await CreateWorkItemAsync(engine, (workItem) =>
             {
                 workItem.Arguments = parameterArgumentService.Arguments;
+                Console.WriteLine($"Created WorkItem: {workItem.ToJson()}");
             });
-            await WorkItemStatusWait(workItem, engine);
+            await WorkItemStatusWait(workItemStatus, engine);
 
 
             //ConsoleParameter(parameterArgumentService);
@@ -174,30 +174,7 @@ namespace DesignAutomationConsole.Services
             return await parameterArgumentService.Finalize();
         }
 
-        //private static void ConsoleParameter<T>(ParameterArgumentService<T> parameterArgumentService) where T : class
-        //{
-        //    Console.WriteLine("------------------------");
-        //    Console.WriteLine($"Parameters");
-        //    var activityParameters = parameterArgumentService.Parameters;
-        //    foreach (var item in activityParameters)
-        //    {
-        //        Console.WriteLine($"{item.Key} {item.Value}");
-        //    }
-
-        //    Console.WriteLine($"Arguments");
-        //    var workItemArguments = parameterArgumentService.Arguments;
-        //    foreach (var item in workItemArguments)
-        //    {
-        //        Console.WriteLine($"{item.Key} {item.Value}");
-        //    }
-
-        //    var downloads = parameterArgumentService.DownloadFiles;
-        //    foreach (var download in downloads)
-        //    {
-        //        Console.WriteLine($"DownloadFiles: {download}");
-        //    }
-        //    Console.WriteLine("------------------------");
-        //}
+        #endregion
 
         #region Get
         private string GetQualifiedId(string packageName, bool enviromentEnable = true)
@@ -561,28 +538,6 @@ namespace DesignAutomationConsole.Services
 
             //Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
         }
-
-
-        //public async Task<WorkItemStatus> CreateWorkItemAsync(string engine,
-        //    params object[] arguments)
-        //{
-        //    engine = GetDefaultEngine(engine);
-
-        //    string activityName = this.GetActivityName(appName, engine);
-        //    string activityId = this.GetQualifiedId(activityName);
-
-        //    var workItemBundle = new WorkItem();
-        //    workItemBundle.ActivityId = activityId;
-
-        //    workItemBundle.Arguments = new Dictionary<string, IArgument>();
-
-        //    CoreCreateWorkItem(workItemBundle, arguments);
-
-        //    var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
-
-        //    return status;
-        //}
-
 
         public async Task<WorkItemStatus> CheckWorkItemAsync(string id)
         {
