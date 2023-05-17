@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace DesignAutomationConsole.Services
+namespace DesignAutomationConsole.Extensions
 {
     /// <summary>
     /// A static class containing methods for working with custom attributes.

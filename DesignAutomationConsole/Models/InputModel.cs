@@ -1,4 +1,4 @@
-﻿using DesignAutomationConsole.Services;
+﻿using DesignAutomationConsole.Extensions;
 
 namespace DesignAutomationConsole.Models
 {

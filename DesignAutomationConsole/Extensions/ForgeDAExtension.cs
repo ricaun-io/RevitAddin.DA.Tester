@@ -1,7 +1,7 @@
 ﻿using Autodesk.Forge.DesignAutomation.Model;
 using System;
 
-namespace DesignAutomationConsole.Services
+namespace DesignAutomationConsole.Extensions
 {
     /// <summary>
     /// ForgeDAExtension

@@ -51,14 +51,17 @@ namespace DesignAutomationConsole
             //    ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
             //};
 
-            await DA_Revit_Test();
+            //await DA_Revit_Test();
+
+            await DA_AutoCAD_Test();
+
             return;
 
-            //await DA_AutoCAD_Test();
-            //await DA_Revit_Test();
-            //await DA_3dsMax_Test();
-            //await DA_Inventor_Test();
-            //return;
+            await DA_AutoCAD_Test();
+            await DA_Revit_Test();
+            await DA_3dsMax_Test();
+            await DA_Inventor_Test();
+            return;
 
             var appName = "RevitAddin_DA_Tester";
 
@@ -235,23 +238,23 @@ namespace DesignAutomationConsole
         private static async Task DA_Revit_Test()
         {
             var service = new RevitDesignAutomationService("DeleteWalls");
-            await service.Initialize(@".\DA\DA4Revit\DeleteWalls.zip");
+            //await service.Initialize(@".\DA\DA4Revit\DeleteWalls.zip");
             await service.Run<RevitParameterOptions>(options =>
             {
                 options.RvtFile = @".\DA\DA4Revit\DeleteWalls2021.rvt";
-            });
-            await service.Run<RevitParameterOptions>(options =>
-            {
-                options.RvtFile = @".\DA\DA4Revit\DeleteWalls2022.rvt";
-            }, "2022");
-            await service.Run<RevitParameterOptions>(options =>
-            {
-                options.RvtFile = @".\DA\DA4Revit\DeleteWalls2023.rvt";
-            }, "2023");
-            await service.Run<RevitParameterOptions>(options =>
-            {
-                options.RvtFile = @".\DA\DA4Revit\DeleteWalls2024.rvt";
-            }, "2024");
+            }, "2021");
+            //await service.Run<RevitParameterOptions>(options =>
+            //{
+            //    options.RvtFile = @".\DA\DA4Revit\DeleteWalls2022.rvt";
+            //}, "2022");
+            //await service.Run<RevitParameterOptions>(options =>
+            //{
+            //    options.RvtFile = @".\DA\DA4Revit\DeleteWalls2023.rvt";
+            //}, "2023");
+            //await service.Run<RevitParameterOptions>(options =>
+            //{
+            //    options.RvtFile = @".\DA\DA4Revit\DeleteWalls2024.rvt";
+            //}, "2024");
         }
     }
 }

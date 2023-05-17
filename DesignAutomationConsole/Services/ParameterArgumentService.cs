@@ -1,6 +1,6 @@
 ﻿using Autodesk.Forge.DesignAutomation.Model;
-using Autodesk.Forge.Oss;
 using DesignAutomationConsole.Attributes;
+using DesignAutomationConsole.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,32 +9,37 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
-    public class ParameterArgumentService<T> where T : class
+    public class ParameterArgumentService<T> : IParameterArgumentService<T> where T : class
     {
-        private readonly DesignAutomationService designAutomationService;
+        #region Variables
+        private IRequestService requestService = RequestService.Instance;
+        private readonly IOssService ossService;
         private readonly T obj;
 
         /// <summary>
         /// Parameters for DA activity.
         /// </summary>
-        public Dictionary<string, Parameter> Parameters { get; } = new Dictionary<string, Parameter>();
+        private Dictionary<string, Parameter> Parameters { get; } = new Dictionary<string, Parameter>();
         /// <summary>
         /// Arguments for DA workitem.
         /// </summary>
-        public Dictionary<string, IArgument> Arguments { get; } = new Dictionary<string, IArgument>();
+        private Dictionary<string, IArgument> Arguments { get; } = new Dictionary<string, IArgument>();
         /// <summary>
         /// Download files for DA workitem when finish.
         /// </summary>
-        public List<DownloadFile> DownloadFiles { get; } = new List<DownloadFile>();
+        private List<DownloadFile> DownloadFiles { get; } = new List<DownloadFile>();
+        #endregion
 
-        public ParameterArgumentService(DesignAutomationService designAutomationService, T obj)
+        public ParameterArgumentService(IOssService ossService, T obj)
         {
-            this.designAutomationService = designAutomationService;
+            this.ossService = ossService;
             this.obj = obj;
         }
 
         public async Task Initialize()
         {
+            WriteLine($"Initialize - {typeof(T).Name}");
+
             Parameters.Clear();
             Arguments.Clear();
             DownloadFiles.Clear();
@@ -56,7 +61,7 @@ namespace DesignAutomationConsole.Services
                     if (parameterInput.UploadFile)
                     {
                         value = InputUtils.CreateTempFile(value);
-                        Console.WriteLine($"CreateTempFile: {value}");
+                        WriteLine($"CreateTempFile: {value}");
                     }
 
                     // http, file
@@ -64,8 +69,8 @@ namespace DesignAutomationConsole.Services
                     {
                         if (InputUtils.IsFile(stringValue, out string filePath))
                         {
-                            stringValue = await UploadFile(filePath, uploadFileName);
-                            Console.WriteLine($"UploadFile: {localName} {stringValue}");
+                            stringValue = await ossService.UploadFileAsync(filePath, uploadFileName);
+                            WriteLine($"UploadFile: {localName} {stringValue}");
                         }
 
                         if (InputUtils.IsUrl(stringValue))
@@ -100,7 +105,7 @@ namespace DesignAutomationConsole.Services
 
                     if (value is null || (string.IsNullOrWhiteSpace(callbackArgument)))
                     {
-                        callbackArgument = await CreateReadWrite(downloadFileName);
+                        callbackArgument = await ossService.CreateUrlReadWriteAsync(downloadFileName);
                         if (PropertyUtils.IsPropertyTypeString(property))
                         {
                             property.SetValue(obj, callbackArgument);
@@ -125,8 +130,9 @@ namespace DesignAutomationConsole.Services
             }
         }
 
-        public void UpdateActivity(Activity activity)
+        public void Update(Activity activity)
         {
+            WriteLine($"Update Activity - {activity.Id}");
             activity.Parameters = Parameters;
             foreach (var property in obj.GetType().GetProperties())
             {
@@ -136,11 +142,13 @@ namespace DesignAutomationConsole.Services
                 {
                     parameterActivity.UpdateActivity(activity, name, value);
                 }
-                //if (property.TryGetAttribute(out ParameterActivityAttribute parameterActivity))
-                //{
-                //parameterActivity.UpdateActivity(activity, name, value);
-                //}
             }
+        }
+
+        public void Update(WorkItem workItem)
+        {
+            WriteLine($"Update WorkItem - {workItem.ActivityId}");
+            workItem.Arguments = Arguments;
         }
 
         public async Task<T> Finalize()
@@ -150,61 +158,37 @@ namespace DesignAutomationConsole.Services
                 var fileName = downloadFile.FileName;
                 try
                 {
-                    Console.WriteLine($"DownloadFile: {fileName} {downloadFile.Property}");
+                    WriteLine($"Download: {fileName} {downloadFile.Property}");
 
                     if (!PropertyUtils.IsPropertyTypeString(downloadFile.Property))
                     {
-                        var jsonObject = await RequestService.Instance.GetJsonAsync(downloadFile.Url, downloadFile.Property.PropertyType);
-                        //Console.WriteLine($"DownloadJson: {jsonObject}");
+                        var jsonObject = await requestService.GetJsonAsync(downloadFile.Url, downloadFile.Property.PropertyType);
+                        WriteLine($"DownloadJson: {jsonObject}");
                         downloadFile.Property.SetValue(obj, jsonObject);
                     }
                     else
                     {
-                        var filePath = await RequestService.Instance.GetFileAsync(downloadFile.Url, fileName);
-                        //Console.WriteLine($"DownloadFile: {filePath}");
+                        var filePath = await requestService.GetFileAsync(downloadFile.Url, fileName);
+                        WriteLine($"DownloadFile: {filePath}");
                         downloadFile.Property.SetValue(obj, filePath);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"DownloadFile: {ex.GetType()}");
+                    WriteLine($"DownloadFail: {ex.GetType()}");
                 }
             }
+
+            WriteLine("Finalize");
             return this.obj;
         }
 
-        #region Oss
-        private async Task<string> CreateOssBucketKey()
+        public bool EnableConsoleLogger { get; set; } = false;
+        private void WriteLine(object message)
         {
-            var nickname = await designAutomationService.GetNicknameAsync();
-            var bucketKey = nickname.ToLower() + "_" + designAutomationService.AppName.ToLower();
-            var bucket = await designAutomationService.OssClient.TryGetBucketDetailsAsync(bucketKey);
-            if (bucket is null) bucket = await designAutomationService.OssClient.CreateBucketAsync(bucketKey);
-            return bucketKey;
+            if (EnableConsoleLogger == false) return;
+            Console.WriteLine($"[ParameterArgument] {message}");
         }
-
-        private async Task<string> UploadFile(string localFullName, string name, string engine = null)
-        {
-            var fileName = name + engine;
-            var bucketKey = await CreateOssBucketKey();
-            var objectDetails = await designAutomationService.OssClient.UploadFileAsync(bucketKey, fileName, localFullName);
-            return await designAutomationService.OssClient.CreateSignedFileAsync(bucketKey, fileName);
-        }
-
-        private async Task<string> CreateWrite(string name, string engine = null)
-        {
-            var fileName = name + engine;
-            var bucketKey = await CreateOssBucketKey();
-            return await designAutomationService.OssClient.CreateSignedFileWriteAsync(bucketKey, fileName);
-        }
-
-        private async Task<string> CreateReadWrite(string name, string engine = null)
-        {
-            var fileName = name + engine;
-            var bucketKey = await CreateOssBucketKey();
-            return await designAutomationService.OssClient.CreateSignedFileAsync(bucketKey, fileName, "readwrite");
-        }
-        #endregion
 
         #region Utils
 
@@ -270,22 +254,32 @@ namespace DesignAutomationConsole.Services
         }
 
         #endregion
+
+        #region DownloadFile
+        public class DownloadFile
+        {
+            public string Url { get; set; }
+            public string FileName { get; set; }
+            public PropertyInfo Property { get; set; }
+            public DownloadFile(string fileName, string url, PropertyInfo property)
+            {
+                FileName = fileName;
+                Url = url;
+                Property = property;
+            }
+            public override string ToString()
+            {
+                return Url;
+            }
+        }
+        #endregion
     }
 
-    public class DownloadFile
+    public interface IParameterArgumentService<T>
     {
-        public string Url { get; set; }
-        public string FileName { get; set; }
-        public PropertyInfo Property { get; set; }
-        public DownloadFile(string fileName, string url, PropertyInfo property)
-        {
-            FileName = fileName;
-            Url = url;
-            Property = property;
-        }
-        public override string ToString()
-        {
-            return Url;
-        }
+        public Task Initialize();
+        public void Update(Activity activity);
+        public void Update(WorkItem workItem);
+        public Task<T> Finalize();
     }
 }

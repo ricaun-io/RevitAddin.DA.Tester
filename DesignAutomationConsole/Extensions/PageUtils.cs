@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DesignAutomationConsole.Services
+namespace DesignAutomationConsole.Extensions
 {
     /// <summary>
     /// PageUtils

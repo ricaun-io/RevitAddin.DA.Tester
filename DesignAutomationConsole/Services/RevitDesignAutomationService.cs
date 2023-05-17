@@ -12,12 +12,12 @@ namespace DesignAutomationConsole.Services
 
         public override string CoreConsoleExe()
         {
-            return "revitcoreconsole.exe";
+            return DefineDesignAutomation.Revit.Core;
         }
 
         public override string CoreEngine()
         {
-            return "Autodesk.Revit";
+            return DefineDesignAutomation.Revit.Engine;
         }
 
         public override string[] CoreEngineVersions()

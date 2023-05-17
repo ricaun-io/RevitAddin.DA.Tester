@@ -1,9 +1,6 @@
 ﻿using Autodesk.Forge.DesignAutomation.Model;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 
-namespace DesignAutomationConsole.Services
+namespace DesignAutomationConsole.Extensions
 {
     /// <summary>
     /// IArgumentUtils
@@ -61,8 +58,5 @@ namespace DesignAutomationConsole.Services
             argument.Verb = verb;
             return argument;
         }
-
-
-
     }
 }

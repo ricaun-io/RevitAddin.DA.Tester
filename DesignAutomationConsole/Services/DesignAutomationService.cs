@@ -2,6 +2,8 @@
 using Autodesk.Forge.DesignAutomation;
 using Autodesk.Forge.DesignAutomation.Model;
 using Autodesk.Forge.Oss;
+using DesignAutomationConsole.Extensions;
+using DesignAutomationConsole.Services;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -12,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
-    public abstract class DesignAutomationService
+    public abstract class DesignAutomationService : IOssService
     {
         #region private readonly
         private readonly string forgeEnvironment;
@@ -143,7 +145,7 @@ namespace DesignAutomationConsole.Services
             //{
             var activity = await CreateActivityAsync(engine, (activity) =>
             {
-                parameterArgumentService.UpdateActivity(activity);
+                parameterArgumentService.Update(activity);
             });
             Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
             Console.WriteLine($"Created Activity: {activity.ToJson()}");
@@ -161,7 +163,7 @@ namespace DesignAutomationConsole.Services
             Console.WriteLine($"Created WorkItem: {engine}");
             var workItemStatus = await CreateWorkItemAsync(engine, (workItem) =>
             {
-                workItem.Arguments = parameterArgumentService.Arguments;
+                parameterArgumentService.Update(workItem);
                 Console.WriteLine($"Created WorkItem: {workItem.ToJson()}");
             });
             await WorkItemStatusWait(workItemStatus, engine);
@@ -605,6 +607,52 @@ namespace DesignAutomationConsole.Services
                 return await this.designAutomationClient.GetEngineAsync(engineId);
             }
             return null;
+        }
+        #endregion
+
+        #region Oss
+        private async Task<string> CreateOssBucketKey()
+        {
+            var nickname = await GetNicknameAsync();
+            var bucketKey = nickname.ToLower() + "_" + AppName.ToLower();
+            var bucket = await OssClient.TryGetBucketDetailsAsync(bucketKey);
+            if (bucket is null) bucket = await OssClient.CreateBucketAsync(bucketKey);
+            return bucketKey;
+        }
+
+        private async Task<string> UploadFile(string localFullName, string name, string engine = null)
+        {
+            var fileName = name + engine;
+            var bucketKey = await CreateOssBucketKey();
+            var objectDetails = await OssClient.UploadFileAsync(bucketKey, fileName, localFullName);
+            return await OssClient.CreateSignedFileAsync(bucketKey, fileName);
+        }
+
+        private async Task<string> CreateWrite(string name, string engine = null)
+        {
+            var fileName = name + engine;
+            var bucketKey = await CreateOssBucketKey();
+            return await OssClient.CreateSignedFileWriteAsync(bucketKey, fileName);
+        }
+
+        private async Task<string> CreateReadWrite(string name, string engine = null)
+        {
+            var fileName = name + engine;
+            var bucketKey = await CreateOssBucketKey();
+            return await OssClient.CreateSignedFileAsync(bucketKey, fileName, "readwrite");
+        }
+
+        public async Task<string> UploadFileAsync(string localFullName, string fileName)
+        {
+            var bucketKey = await CreateOssBucketKey();
+            var objectDetails = await OssClient.UploadFileAsync(bucketKey, fileName, localFullName);
+            return await OssClient.CreateSignedFileAsync(bucketKey, fileName);
+        }
+
+        public async Task<string> CreateUrlReadWriteAsync(string fileName)
+        {
+            var bucketKey = await CreateOssBucketKey();
+            return await OssClient.CreateSignedFileAsync(bucketKey, fileName, "readwrite");
         }
         #endregion
     }
