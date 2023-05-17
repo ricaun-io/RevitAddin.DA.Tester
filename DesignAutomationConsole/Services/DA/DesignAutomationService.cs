@@ -22,12 +22,25 @@ namespace DesignAutomationConsole.Services
         private readonly string appName;
         #endregion
 
+        #region Console
+        public bool EnableConsoleLogger { get; set; } = true;
+        private void WriteLine(object message)
+        {
+            if (EnableConsoleLogger == false) return;
+            Console.WriteLine($"[DesignAutomation] {message}");
+        }
+        #endregion
+
         #region init
         public bool ForceCreateWorkItemReport { get; init; } = false;
         public bool ForceUpdateAppBundle { get; init; } = false;
         public bool ForceUpdateActivity { get; init; } = false;
         public bool ForceDeleteNotUsed { get; init; } = true;
         public string ForgeEnvironment { get; init; } = "dev";
+        #endregion
+
+        #region Console Logger
+
         #endregion
 
         /// <summary>
@@ -94,14 +107,14 @@ namespace DesignAutomationConsole.Services
             var tempAppBundle = await TryGetBundleAsync();
             if (tempAppBundle is AppBundle)
             {
-                Console.WriteLine($"[AppBundle] Id: {tempAppBundle.Id}");
+                WriteLine($"[AppBundle] Id: {tempAppBundle.Id}");
             }
 
             var updateAppBundle = (tempAppBundle is null) || ForceUpdateAppBundle;
             if (updateAppBundle)
             {
                 var appBundle = await CreateAppBundleAsync(packagePath);
-                Console.WriteLine($"[AppBundle] Create Id: {appBundle.Id} {appBundle.Version}");
+                WriteLine($"[AppBundle] Create Id: {appBundle.Id} {appBundle.Version}");
             }
 
             if (ForceDeleteNotUsed)
@@ -109,7 +122,7 @@ namespace DesignAutomationConsole.Services
                 var appBundleDeleted = await DeleteNotUsedAppBundleVersionsAsync();
                 if (appBundleDeleted.Any())
                 {
-                    Console.WriteLine($"[AppBundle] Delete: {string.Join(" ", appBundleDeleted)}");
+                    WriteLine($"[AppBundle] Delete: {string.Join(" ", appBundleDeleted)}");
                 }
             }
         }
@@ -119,7 +132,7 @@ namespace DesignAutomationConsole.Services
             try
             {
                 await DeleteAppBundleAsync();
-                Console.WriteLine($"[AppBundle] Delete: {AppName}");
+                WriteLine($"[AppBundle] Delete: {AppName}");
             }
             catch { }
             foreach (var engine in CoreEngineVersions())
@@ -127,7 +140,7 @@ namespace DesignAutomationConsole.Services
                 try
                 {
                     await DeleteActivityAsync(engine);
-                    Console.WriteLine($"[Activity] Delete: {engine}");
+                    WriteLine($"[Activity] Delete: {engine}");
                 }
                 catch { }
             }
@@ -155,7 +168,9 @@ namespace DesignAutomationConsole.Services
                 throw new Exception($"Engine '{engine}' not found in the CoreEngineVersions");
             }
 
-            var parameterArgumentService = new ParameterArgumentService<T>(this, requestService, options);
+            IParameterArgumentService<T> parameterArgumentService =
+                new ParameterArgumentService<T>(this, requestService, options);
+
             await parameterArgumentService.Initialize();
 
             // Activity
@@ -163,7 +178,7 @@ namespace DesignAutomationConsole.Services
                 var tempActivity = await TryGetActivityAsync(engine);
                 if (tempActivity is Activity)
                 {
-                    Console.WriteLine($"[Activity] Id: {tempActivity.Id}");
+                    WriteLine($"[Activity] Id: {tempActivity.Id}");
                 }
 
                 var updateActivity = (tempActivity is null) || ForceUpdateActivity;
@@ -173,15 +188,15 @@ namespace DesignAutomationConsole.Services
                     {
                         parameterArgumentService.Update(activity);
                     });
-                    Console.WriteLine($"[Activity] Created Id: {activity.Id} {activity.Version}");
-                    //Console.WriteLine($"[Activity] Created: {activity.ToJson()}");
+                    WriteLine($"[Activity] Created Id: {activity.Id} {activity.Version}");
+                    //WriteLine($"[Activity] Created: {activity.ToJson()}");
 
                     if (ForceDeleteNotUsed)
                     {
                         var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
                         if (activityDeleted.Any())
                         {
-                            Console.WriteLine($"[Activity] Delete: {string.Join(" ", activityDeleted)}");
+                            WriteLine($"[Activity] Delete: {string.Join(" ", activityDeleted)}");
                         }
                     }
                 }
@@ -192,10 +207,10 @@ namespace DesignAutomationConsole.Services
                 var workItemStatus = await CreateWorkItemAsync(engine, (workItem) =>
                 {
                     parameterArgumentService.Update(workItem);
-                    Console.WriteLine($"[WorkItem] Created: {workItem.ActivityId}");
-                    //Console.WriteLine($"[WorkItem] Created: {workItem.ToJson()}");
+                    WriteLine($"[WorkItem] Created: {workItem.ActivityId}");
+                    //WriteLine($"[WorkItem] Created: {workItem.ToJson()}");
                 });
-                Console.WriteLine($"[WorkItem] Wait: {workItemStatus.Id}");
+                WriteLine($"[WorkItem] Wait: {workItemStatus.Id}");
                 await WorkItemStatusWait(workItemStatus);
             }
 
@@ -565,35 +580,35 @@ namespace DesignAutomationConsole.Services
             const int MillisecondsDelay = 10000;
 
             var number = 0;
-            Console.WriteLine($"[{DateTime.Now}]: {status.Id}");
+            WriteLine($"[{DateTime.Now}]: {status.Id}");
             while (status.Status == Status.Pending | status.Status == Status.Inprogress)
             {
-                Console.WriteLine($"[{DateTime.Now}]: {status.Status} | \t{status.GetTimeStarted()}");
+                WriteLine($"[{DateTime.Now}]: {status.Status} | \t{status.GetTimeStarted()}");
                 if (number++ > 120) break;
                 await Task.Delay(MillisecondsDelay);
                 status = await this.GetWorkitemStatusAsync(status.Id);
             }
-            Console.WriteLine($"[{DateTime.Now}]: {status.Status}");
-            Console.WriteLine($"[{DateTime.Now}]: EstimateTime: {status.EstimateTime()}");
-            Console.WriteLine($"[{DateTime.Now}]: EstimateCosts: {status.EstimateCosts()}");
+            WriteLine($"[{DateTime.Now}]: {status.Status}");
+            WriteLine($"[{DateTime.Now}]: EstimateTime: {status.EstimateTime()}");
+            WriteLine($"[{DateTime.Now}]: EstimateCosts: {status.EstimateCosts()}");
 
             var report = await CheckWorkItemReportAsync(status.Id);
 
             if (ForceCreateWorkItemReport)
             {
                 string fileName = $"report_{status.Id}.log";
-                Console.WriteLine($"[{DateTime.Now}]: File Create: {fileName}");
+                WriteLine($"[{DateTime.Now}]: File Create: {fileName}");
                 File.WriteAllText(fileName, $"{report}");
             }
 
             if (status.Status != Status.Success)
             {
-                Console.WriteLine(report);
+                WriteLine(report);
             }
 
             // Todo: DeleteWorkItem if timeout
 
-            //Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
+            //WriteLine(await CheckWorkItemReportAsync(status.Id));
             return status.Status == Status.Success;
         }
 
@@ -655,10 +670,6 @@ namespace DesignAutomationConsole.Services
         public async Task<Engine> GetEngineAsync(string startWith)
         {
             var engines = await GetEnginesAsync();
-            //foreach (var item in engines)
-            //{
-            //    Console.WriteLine(item);
-            //}
             var engineId = engines.OrderByDescending(e => e).FirstOrDefault(e => e.StartsWith(startWith));
             if (engineId is not null)
             {

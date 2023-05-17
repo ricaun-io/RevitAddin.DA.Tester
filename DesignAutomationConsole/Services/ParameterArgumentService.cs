@@ -207,12 +207,14 @@ namespace DesignAutomationConsole.Services
             return this.obj;
         }
 
+        #region Console
         public bool EnableConsoleLogger { get; set; } = false;
         private void WriteLine(object message)
         {
             if (EnableConsoleLogger == false) return;
             Console.WriteLine($"[ParameterArgument] {message}");
         }
+        #endregion
 
         #region Utils
 
