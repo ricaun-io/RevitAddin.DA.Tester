@@ -3,7 +3,6 @@ using Autodesk.Forge.DesignAutomation;
 using Autodesk.Forge.DesignAutomation.Model;
 using Autodesk.Forge.Oss;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
-
     public abstract class DesignAutomationService
     {
         #region private readonly
