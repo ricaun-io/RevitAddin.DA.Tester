@@ -201,7 +201,7 @@ namespace DesignAutomationConsole
 
         private static async Task DA_3dsMax_Test()
         {
-            var service = new MaxDesignAutomationService("ExecuteMaxscript");
+            IDesignAutomationService service = new MaxDesignAutomationService("ExecuteMaxscript");
             await service.Run<MaxParameterOptions>(options =>
             {
                 options.InputMaxScene = @".\DA\DA43dsMax\input.zip";
@@ -211,18 +211,25 @@ namespace DesignAutomationConsole
 
         private static async Task DA_AutoCAD_Test()
         {
-            var service = new AutoCADDesignAutomationService("ListLayers");
+            IDesignAutomationService service = new AutoCADDesignAutomationService("ListLayers")
+            {
+                //ForceUpdateAppBundle = true,
+                //ForceUpdateActivity = true,
+                //ForceCreateWorkItemReport = true,
+            };
             await service.Initialize(@".\DA\DA4ACAD\ListLayers.zip");
             await service.Run<AutoCADParameterOptions>(options =>
             {
                 options.InputDwg = @".\DA\DA4ACAD\ListLayers.dwg";
                 options.Script = "(command \"LISTLAYERS\")\n";
             });
+
+            //await service.Delete();
         }
 
         private static async Task DA_Inventor_Test()
         {
-            var service = new InventorDesignAutomationService("ChangeParam");
+            IDesignAutomationService service = new InventorDesignAutomationService("ChangeParam");
             await service.Initialize(@".\DA\DA4Inventor\samplePlugin.bundle.zip");
             await service.Run<InventorParameterOptions>(options =>
             {
@@ -237,7 +244,7 @@ namespace DesignAutomationConsole
 
         private static async Task DA_Revit_Test()
         {
-            var service = new RevitDesignAutomationService("DeleteWalls");
+            IDesignAutomationService service = new RevitDesignAutomationService("DeleteWalls");
             //await service.Initialize(@".\DA\DA4Revit\DeleteWalls.zip");
             await service.Run<RevitParameterOptions>(options =>
             {

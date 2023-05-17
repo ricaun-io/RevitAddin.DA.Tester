@@ -4,8 +4,8 @@ namespace DesignAutomationConsole.Services
 {
     public class InventorDesignAutomationService : DesignAutomationService
     {
-        public InventorDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null, string forgeEnvironment = "dev") :
-            base(appName, forgeConfiguration, forgeEnvironment)
+        public InventorDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null) :
+            base(appName, forgeConfiguration)
         {
         }
 

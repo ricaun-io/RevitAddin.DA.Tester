@@ -4,9 +4,7 @@ namespace DesignAutomationConsole.Services
 {
     public class RevitDesignAutomationService : DesignAutomationService
     {
-        public RevitDesignAutomationService(string appName,
-            ForgeConfiguration forgeConfiguration = null,
-            string forgeEnvironment = "dev") : base(appName, forgeConfiguration, forgeEnvironment)
+        public RevitDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null) : base(appName, forgeConfiguration)
         {
         }
 

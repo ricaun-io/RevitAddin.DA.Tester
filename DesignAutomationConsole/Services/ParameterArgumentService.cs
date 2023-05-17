@@ -12,7 +12,7 @@ namespace DesignAutomationConsole.Services
     public class ParameterArgumentService<T> : IParameterArgumentService<T> where T : class
     {
         #region Variables
-        private IRequestService requestService = RequestService.Instance;
+        private readonly IRequestService requestService;
         private readonly IOssService ossService;
         private readonly T obj;
 
@@ -30,9 +30,10 @@ namespace DesignAutomationConsole.Services
         private List<DownloadFile> DownloadFiles { get; } = new List<DownloadFile>();
         #endregion
 
-        public ParameterArgumentService(IOssService ossService, T obj)
+        public ParameterArgumentService(IOssService ossService, IRequestService requestService, T obj)
         {
             this.ossService = ossService;
+            this.requestService = requestService;
             this.obj = obj;
         }
 

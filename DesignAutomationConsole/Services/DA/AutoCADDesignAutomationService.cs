@@ -4,8 +4,7 @@ namespace DesignAutomationConsole.Services
 {
     public class AutoCADDesignAutomationService : DesignAutomationService
     {
-        public AutoCADDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null, string forgeEnvironment = "dev") :
-            base(appName, forgeConfiguration, forgeEnvironment)
+        public AutoCADDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null) : base(appName, forgeConfiguration)
         {
         }
 

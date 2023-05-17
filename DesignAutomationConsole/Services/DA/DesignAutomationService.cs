@@ -3,7 +3,6 @@ using Autodesk.Forge.DesignAutomation;
 using Autodesk.Forge.DesignAutomation.Model;
 using Autodesk.Forge.Oss;
 using DesignAutomationConsole.Extensions;
-using DesignAutomationConsole.Services;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -14,15 +13,27 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
-    public abstract class DesignAutomationService : IOssService
+    public abstract class DesignAutomationService : IOssService, IDesignAutomationService
     {
         #region private readonly
-        private readonly string forgeEnvironment;
+        private IRequestService requestService = RequestService.Instance;
         private readonly DesignAutomationClient designAutomationClient;
         private readonly OssClient ossClient;
         private readonly string appName;
         #endregion
 
+        #region init
+        public bool ForceCreateWorkItemReport { get; init; } = false;
+        public bool ForceUpdateAppBundle { get; init; } = false;
+        public bool ForceUpdateActivity { get; init; } = false;
+        public bool ForceDeleteNotUsed { get; init; } = true;
+        public string ForgeEnvironment { get; init; } = "dev";
+        #endregion
+
+        /// <summary>
+        /// WorkItems Id
+        /// </summary>
+        public List<string> WorkItems { get; } = new List<string>();
         #region public
         public string AppName => appName;
         public DesignAutomationClient DesignAutomationClient => designAutomationClient;
@@ -30,10 +41,7 @@ namespace DesignAutomationConsole.Services
         #endregion
 
         #region Constructor
-        public DesignAutomationService(
-            string appName,
-            ForgeConfiguration forgeConfiguration = null,
-            string forgeEnvironment = "dev")
+        public DesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null)
         {
             this.appName = appName;
             forgeConfiguration = forgeConfiguration ?? new ForgeConfiguration();
@@ -45,7 +53,6 @@ namespace DesignAutomationConsole.Services
 
             var service = GetForgeService(forgeConfiguration);
 
-            this.forgeEnvironment = forgeEnvironment;
             this.designAutomationClient = new DesignAutomationClient(service);
 
             this.ossClient = new OssClient(new Autodesk.Forge.Oss.Configuration()
@@ -84,39 +91,49 @@ namespace DesignAutomationConsole.Services
 
         public async Task Initialize(string packagePath)
         {
-            var appBundle = await CreateAppBundleAsync(packagePath);
-            Console.WriteLine($"Created AppBundle Id: {appBundle.Id} {appBundle.Version}");
-            var appBundleDeleted = await DeleteNotUsedAppBundleVersionsAsync();
-            if (appBundleDeleted.Any())
-                Console.WriteLine($"\tDeleted AppBundles: {string.Join(" ", appBundleDeleted)}");
+            var tempAppBundle = await TryGetBundleAsync();
+            if (tempAppBundle is AppBundle)
+            {
+                Console.WriteLine($"[AppBundle] Id: {tempAppBundle.Id}");
+            }
+
+            var updateAppBundle = (tempAppBundle is null) || ForceUpdateAppBundle;
+            if (updateAppBundle)
+            {
+                var appBundle = await CreateAppBundleAsync(packagePath);
+                Console.WriteLine($"[AppBundle] Create Id: {appBundle.Id} {appBundle.Version}");
+            }
+
+            if (ForceDeleteNotUsed)
+            {
+                var appBundleDeleted = await DeleteNotUsedAppBundleVersionsAsync();
+                if (appBundleDeleted.Any())
+                {
+                    Console.WriteLine($"[AppBundle] Delete: {string.Join(" ", appBundleDeleted)}");
+                }
+            }
         }
 
-        public async Task DeleteAppBundleAndActivities()
+        public async Task Delete()
         {
             try
             {
                 await DeleteAppBundleAsync();
-                Console.WriteLine($"Deleted AppBundle: {AppName}");
+                Console.WriteLine($"[AppBundle] Delete: {AppName}");
             }
             catch { }
             foreach (var engine in CoreEngineVersions())
             {
                 try
                 {
-                    await DeleteActivity(engine);
-                    Console.WriteLine($"Deleted Activity: {engine}");
+                    await DeleteActivityAsync(engine);
+                    Console.WriteLine($"[Activity] Delete: {engine}");
                 }
                 catch { }
             }
         }
 
         #region Run
-
-        public async Task<T> Run<T>(int engine) where T : class
-        {
-            return await Run<T>(engine.ToString());
-        }
-
         public async Task<T> Run<T>(string engine = null) where T : class
         {
             return await Run<T>((obj) => { }, engine);
@@ -138,40 +155,53 @@ namespace DesignAutomationConsole.Services
                 throw new Exception($"Engine '{engine}' not found in the CoreEngineVersions");
             }
 
-            var parameterArgumentService = new ParameterArgumentService<T>(this, options);
+            var parameterArgumentService = new ParameterArgumentService<T>(this, requestService, options);
             await parameterArgumentService.Initialize();
 
-            //try
-            //{
-            var activity = await CreateActivityAsync(engine, (activity) =>
+            // Activity
             {
-                parameterArgumentService.Update(activity);
-            });
-            Console.WriteLine($"Created Activity Id: {activity.Id} {activity.Version}");
-            Console.WriteLine($"Created Activity: {activity.ToJson()}");
+                var tempActivity = await TryGetActivityAsync(engine);
+                if (tempActivity is Activity)
+                {
+                    Console.WriteLine($"[Activity] Id: {tempActivity.Id}");
+                }
 
-            var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
-            if (activityDeleted.Any())
-                Console.WriteLine($"\tDeleted Activitys: {string.Join(" ", activityDeleted)}");
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"Created Activity Exception: {ex.Message}");
-            //}
+                var updateActivity = (tempActivity is null) || ForceUpdateActivity;
+                if (updateActivity)
+                {
+                    var activity = await CreateActivityAsync(engine, (activity) =>
+                    {
+                        parameterArgumentService.Update(activity);
+                    });
+                    Console.WriteLine($"[Activity] Created Id: {activity.Id} {activity.Version}");
+                    //Console.WriteLine($"[Activity] Created: {activity.ToJson()}");
 
+                    if (ForceDeleteNotUsed)
+                    {
+                        var activityDeleted = await DeleteNotUsedActivityVersionsAsync(engine);
+                        if (activityDeleted.Any())
+                        {
+                            Console.WriteLine($"[Activity] Delete: {string.Join(" ", activityDeleted)}");
+                        }
+                    }
+                }
+            }
 
-            Console.WriteLine($"Created WorkItem: {engine}");
-            var workItemStatus = await CreateWorkItemAsync(engine, (workItem) =>
+            // WorkItem
             {
-                parameterArgumentService.Update(workItem);
-                Console.WriteLine($"Created WorkItem: {workItem.ToJson()}");
-            });
-            await WorkItemStatusWait(workItemStatus, engine);
+                var workItemStatus = await CreateWorkItemAsync(engine, (workItem) =>
+                {
+                    parameterArgumentService.Update(workItem);
+                    Console.WriteLine($"[WorkItem] Created: {workItem.ActivityId}");
+                    //Console.WriteLine($"[WorkItem] Created: {workItem.ToJson()}");
+                });
+                Console.WriteLine($"[WorkItem] Wait: {workItemStatus.Id}");
+                await WorkItemStatusWait(workItemStatus);
+            }
 
+            var result = await parameterArgumentService.Finalize();
 
-            //ConsoleParameter(parameterArgumentService);
-
-            return await parameterArgumentService.Finalize();
+            return result;
         }
 
         #endregion
@@ -180,7 +210,7 @@ namespace DesignAutomationConsole.Services
         private string GetQualifiedId(string packageName, bool enviromentEnable = true)
         {
             var name = GetNickname();
-            var enviroment = this.forgeEnvironment;
+            var enviroment = this.ForgeEnvironment;
             var qualifiedId = $"{name}.{packageName}";
             if (enviromentEnable)
                 qualifiedId += $"+{enviroment}";
@@ -234,11 +264,18 @@ namespace DesignAutomationConsole.Services
 
         #region Bundle
 
-        public async Task<AppBundle> GetBundleAsync()
+        public async Task<AppBundle> TryGetBundleAsync()
         {
-            var bundleName = this.GetBundleName(appName);
-            var qualifiedId = this.GetQualifiedId(bundleName);
-            return await this.designAutomationClient.GetAppBundleAsync(qualifiedId);
+            try
+            {
+                var bundleName = this.GetBundleName(appName);
+                var qualifiedId = this.GetQualifiedId(bundleName);
+                return await this.designAutomationClient.GetAppBundleAsync(qualifiedId);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task<IEnumerable<string>> GetAllBundlesAsync(bool account = true)
@@ -263,7 +300,7 @@ namespace DesignAutomationConsole.Services
         public async Task DeleteAppBundleAliasAsync(string aliasId = null)
         {
             if (string.IsNullOrWhiteSpace(aliasId))
-                aliasId = this.forgeEnvironment;
+                aliasId = this.ForgeEnvironment;
 
             var bundleName = this.GetBundleName(appName);
             await this.designAutomationClient.DeleteAppBundleAliasAsync(bundleName, aliasId);
@@ -286,12 +323,12 @@ namespace DesignAutomationConsole.Services
 
             if (!bundles.Contains(bundleId))
             {
-                await this.designAutomationClient.CreateAppBundleAsync(bundle, this.forgeEnvironment, packagePath);
+                await this.designAutomationClient.CreateAppBundleAsync(bundle, this.ForgeEnvironment, packagePath);
                 bundle.Version = 1;
             }
             else
             {
-                var version = await this.designAutomationClient.UpdateAppBundleAsync(bundle, this.forgeEnvironment, packagePath);
+                var version = await this.designAutomationClient.UpdateAppBundleAsync(bundle, this.ForgeEnvironment, packagePath);
                 bundle.Version = version;
             }
 
@@ -354,14 +391,23 @@ namespace DesignAutomationConsole.Services
 
         #region Activity
 
-        public async Task DeleteActivity(string engine = null)
+        /// <summary>
+        /// DeleteActivityAsync
+        /// </summary>
+        /// <param name="engine"></param>
+        /// <returns></returns>
+        public async Task DeleteActivityAsync(string engine = null)
         {
             engine = GetDefaultEngine(engine);
-
             var activityName = this.GetActivityName(appName, engine);
             await this.designAutomationClient.DeleteActivityAsync(activityName);
         }
 
+        /// <summary>
+        /// GetAllActivitiesAsync
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<string>> GetAllActivitiesAsync(bool account = true)
         {
             var data = await PageUtils.GetAllItems(designAutomationClient.GetActivitiesAsync);
@@ -377,13 +423,29 @@ namespace DesignAutomationConsole.Services
             return data.OrderBy(e => e);
         }
 
+        /// <summary>
+        /// Gets the details of the specified Activity.
+        /// </summary>
+        public async Task<Activity> TryGetActivityAsync(string engine = null)
+        {
+            try
+            {
+                engine = GetDefaultEngine(engine);
+                var activityName = GetActivityName(appName, engine);
+                var qualifiedId = GetQualifiedId(activityName, true);
+                return await this.designAutomationClient.GetActivityAsync(qualifiedId);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Create or Update the details of the specified Activity.
+        /// </summary>
         public async Task<Activity> CreateActivityAsync(string engine = null, Action<Activity> settingActivity = null)
         {
-            //if (settingActivity is null)
-            //{
-            //    settingActivity = CoreCreateActivity;
-            //}
-
             engine = GetDefaultEngine(engine);
 
             string activityName = this.GetActivityName(appName, engine);
@@ -393,12 +455,12 @@ namespace DesignAutomationConsole.Services
             string qualifiedId = GetQualifiedId(activityName, false);
             if (!activities.Contains(qualifiedId))
             {
-                await this.designAutomationClient.CreateActivityAsync(activity, this.forgeEnvironment);
+                await this.designAutomationClient.CreateActivityAsync(activity, this.ForgeEnvironment);
                 activity.Version = 1;
             }
             else
             {
-                var version = await this.designAutomationClient.UpdateActivityAsync(activity, this.forgeEnvironment);
+                var version = await this.designAutomationClient.UpdateActivityAsync(activity, this.ForgeEnvironment);
                 activity.Version = version;
             }
             return activity;
@@ -410,38 +472,22 @@ namespace DesignAutomationConsole.Services
             var activityName = this.GetActivityName(appName, engine);
             var bundleId = GetQualifiedId(bundleName);
 
-            //var commandInput = "";
-            //commandInput = $"/i \"$(args[{FILE_PARAM}].path)\"";
-            //var commandLanguage = "";
-            //commandLanguage = $"/l $(args[{"read"}].value)";
-            //var commandLine = $"$(engine.path)\\{CoreConsoleExe()} {commandInput} /al \"$(appbundles[{bundleName}].path)\" {commandLanguage}";
-
-            var commandLine = $"$(engine.path)\\{CoreConsoleExe()} /al \"$(appbundles[{bundleName}].path)\"";
             var script = string.Empty;
 
             var activity = new Activity();
             activity.Id = activityName;
             activity.Description = $"Activity {appName}";
             activity.Appbundles = new List<string>() { bundleId };
-            //activity.CommandLine = new List<string>() { commandLine };
+
             activity.CommandLine = new List<string>() {
                 $"$(engine.path)\\{CoreConsoleExe()}",
                 $"/al \"$(appbundles[{bundleName}].path)\""
             };
             activity.Engine = engine;
 
-            //script = $"$(args[{"engine_over"}].value)";
-            //activity.Engine = $"$(args[{"engine_over"}].value)";
-
-            //activity.Settings = new Dictionary<string, ISetting>()
-            //{
-            //    { "script", new StringSetting() { Value = script } }
-            //};
-
             activity.Settings = new Dictionary<string, ISetting>();
             activity.Parameters = new Dictionary<string, Parameter>();
 
-            //CoreCreateActivity(activity);
             settingActivity?.Invoke(activity);
 
             activity.CommandLine = new List<string>() { string.Join(" ", activity.CommandLine) };
@@ -507,28 +553,39 @@ namespace DesignAutomationConsole.Services
 
             settingWorkItem?.Invoke(workItemBundle);
 
-            var status = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
+            var workItemStatus = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
 
-            return status;
+            WorkItems.Add(workItemStatus.Id);
+
+            return workItemStatus;
         }
 
-        public async Task WorkItemStatusWait(WorkItemStatus status, string engine = null)
+        public async Task<bool> WorkItemStatusWait(WorkItemStatus status)
         {
+            const int MillisecondsDelay = 10000;
+
             var number = 0;
             Console.WriteLine($"[{DateTime.Now}]: {status.Id}");
             while (status.Status == Status.Pending | status.Status == Status.Inprogress)
             {
                 Console.WriteLine($"[{DateTime.Now}]: {status.Status} | \t{status.GetTimeStarted()}");
                 if (number++ > 120) break;
-                await Task.Delay(10000);
-                status = await this.CheckWorkItemAsync(status.Id);
+                await Task.Delay(MillisecondsDelay);
+                status = await this.GetWorkitemStatusAsync(status.Id);
             }
             Console.WriteLine($"[{DateTime.Now}]: {status.Status}");
             Console.WriteLine($"[{DateTime.Now}]: EstimateTime: {status.EstimateTime()}");
             Console.WriteLine($"[{DateTime.Now}]: EstimateCosts: {status.EstimateCosts()}");
 
             var report = await CheckWorkItemReportAsync(status.Id);
-            File.WriteAllText($"{engine}_report_{status.Id}.log", $"{report}");
+
+            if (ForceCreateWorkItemReport)
+            {
+                string fileName = $"report_{status.Id}.log";
+                Console.WriteLine($"[{DateTime.Now}]: File Create: {fileName}");
+                File.WriteAllText(fileName, $"{report}");
+            }
+
             if (status.Status != Status.Success)
             {
                 Console.WriteLine(report);
@@ -537,9 +594,10 @@ namespace DesignAutomationConsole.Services
             // Todo: DeleteWorkItem if timeout
 
             //Console.WriteLine(await CheckWorkItemReportAsync(status.Id));
+            return status.Status == Status.Success;
         }
 
-        public async Task<WorkItemStatus> CheckWorkItemAsync(string id)
+        public async Task<WorkItemStatus> GetWorkitemStatusAsync(string id)
         {
             var status = await this.designAutomationClient.GetWorkitemStatusAsync(id);
             status.ProgressEstimateCosts();
@@ -548,11 +606,11 @@ namespace DesignAutomationConsole.Services
 
         public async Task<object> CheckWorkItemReportAsync(string id)
         {
-            var status = await CheckWorkItemAsync(id);
+            var status = await GetWorkitemStatusAsync(id);
             if (status.ReportUrl is not null)
             {
                 var report = $"{status.Progress}{Environment.NewLine}";
-                report += await RequestService.Instance.GetStringAsync(status.ReportUrl);
+                report += await requestService.GetStringAsync(status.ReportUrl);
                 return report;
             }
             return status;

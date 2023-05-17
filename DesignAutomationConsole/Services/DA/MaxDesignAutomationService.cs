@@ -4,8 +4,8 @@ namespace DesignAutomationConsole.Services
 {
     public class MaxDesignAutomationService : DesignAutomationService
     {
-        public MaxDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null, string forgeEnvironment = "dev") :
-            base(appName, forgeConfiguration, forgeEnvironment)
+        public MaxDesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null) :
+            base(appName, forgeConfiguration)
         {
         }
 
