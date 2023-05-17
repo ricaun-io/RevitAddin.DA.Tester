@@ -13,6 +13,9 @@ namespace DesignAutomationConsole.Models
 
         [ParameterActivityScript]
         public string Script { get; set; }
+
+        [ParameterWorkItemTimeSec]
+        public int TimeSec { get; set; } = 30;
     }
 
 }

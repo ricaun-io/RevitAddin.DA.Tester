@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
@@ -27,7 +28,8 @@ namespace DesignAutomationConsole.Services
         private void WriteLine(object message)
         {
             if (EnableConsoleLogger == false) return;
-            Console.WriteLine($"[DesignAutomation] {message}");
+            //Console.WriteLine($"[DesignAutomation] {message}");
+            Console.WriteLine($"[{DateTime.UtcNow}] {message}");
         }
         #endregion
 
@@ -46,7 +48,7 @@ namespace DesignAutomationConsole.Services
         /// <summary>
         /// WorkItems Id
         /// </summary>
-        public List<string> WorkItems { get; } = new List<string>();
+        public Dictionary<string, Status> WorkItems { get; } = new Dictionary<string, Status>();
         #region public
         public string AppName => appName;
         public DesignAutomationClient DesignAutomationClient => designAutomationClient;
@@ -549,7 +551,7 @@ namespace DesignAutomationConsole.Services
 
         #region WorkItem
 
-        public async Task DeleteWorkItem(string id)
+        public async Task DeleteWorkItemAsync(string id)
         {
             await this.designAutomationClient.DeleteWorkItemAsync(id);
         }
@@ -570,46 +572,60 @@ namespace DesignAutomationConsole.Services
 
             var workItemStatus = await this.designAutomationClient.CreateWorkItemAsync(workItemBundle);
 
-            WorkItems.Add(workItemStatus.Id);
+            WorkItems[workItemStatus.Id] = Status.Pending;
 
             return workItemStatus;
         }
 
-        public async Task<bool> WorkItemStatusWait(WorkItemStatus status)
+        public async Task<bool> WorkItemStatusWait(WorkItemStatus workItemStatus, CancellationToken cancellationToken = default)
         {
             const int MillisecondsDelay = 10000;
 
-            var number = 0;
-            WriteLine($"[{DateTime.Now}]: {status.Id}");
-            while (status.Status == Status.Pending | status.Status == Status.Inprogress)
+            if (cancellationToken == CancellationToken.None)
             {
-                WriteLine($"[{DateTime.Now}]: {status.Status} | \t{status.GetTimeStarted()}");
-                if (number++ > 120) break;
-                await Task.Delay(MillisecondsDelay);
-                status = await this.GetWorkitemStatusAsync(status.Id);
+                CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromMinutes(10.0));
+                cancellationToken = source.Token;
             }
-            WriteLine($"[{DateTime.Now}]: {status.Status}");
-            WriteLine($"[{DateTime.Now}]: EstimateTime: {status.EstimateTime()}");
-            WriteLine($"[{DateTime.Now}]: EstimateCosts: {status.EstimateCosts()}");
 
-            var report = await CheckWorkItemReportAsync(status.Id);
+            WriteLine($"[Status]: {workItemStatus.Id}");
+            while (workItemStatus.Status == Status.Pending | workItemStatus.Status == Status.Inprogress)
+            {
+                WriteLine($"[Status]: {workItemStatus.Status} | \t{workItemStatus.GetTimeStarted()}");
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    WriteLine($"[Status]: Cancel | {workItemStatus.Id}");
+                    await this.DeleteWorkItemAsync(workItemStatus.Id);
+                    workItemStatus.Status = Status.Cancelled;
+                    break;
+                }
+                await Task.Delay(MillisecondsDelay);
+                workItemStatus = await this.GetWorkitemStatusAsync(workItemStatus.Id);
+                WorkItems[workItemStatus.Id] = workItemStatus.Status;
+            }
+            WorkItems[workItemStatus.Id] = workItemStatus.Status;
+
+            WriteLine($"[Status]: {workItemStatus.Status}");
+            WriteLine($"[Status]: EstimateTime: {workItemStatus.EstimateTime()}");
+            WriteLine($"[Status]: EstimateCosts: {workItemStatus.EstimateCosts():0.0000}");
+
+            var report = await CheckWorkItemReportAsync(workItemStatus.Id);
 
             if (ForceCreateWorkItemReport)
             {
-                string fileName = $"report_{status.Id}.log";
-                WriteLine($"[{DateTime.Now}]: File Create: {fileName}");
+                string fileName = $"report_{workItemStatus.Id}.log";
+                WriteLine($"[Status]: File Create: {fileName}");
                 File.WriteAllText(fileName, $"{report}");
             }
 
-            if (status.Status != Status.Success)
+            if (workItemStatus.Status != Status.Success)
             {
-                WriteLine(report);
+                WriteLine($"[Status]: {report}");
             }
 
             // Todo: DeleteWorkItem if timeout
 
             //WriteLine(await CheckWorkItemReportAsync(status.Id));
-            return status.Status == Status.Success;
+            return workItemStatus.Status == Status.Success;
         }
 
         public async Task<WorkItemStatus> GetWorkitemStatusAsync(string id)

@@ -3,6 +3,7 @@ using System;
 
 namespace DesignAutomationConsole.Attributes
 {
+
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public abstract class ParameterWorkItemAttribute : Attribute
     {
