@@ -5,7 +5,7 @@ namespace DesignAutomationConsole.Attributes
 {
     public class ParameterActivityClearBundleAttribute : ParameterActivityAttribute
     {
-        public override Activity UpdateActivity(Activity activity, string name, object value)
+        public override Activity Update(Activity activity, string name, object value)
         {
             var commandLine = "/al";
             if (activity.CommandLine.Remove(activity.CommandLine.FirstOrDefault(e => e.StartsWith(commandLine))))

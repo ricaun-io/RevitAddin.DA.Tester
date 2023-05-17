@@ -10,7 +10,7 @@ namespace DesignAutomationConsole.Attributes
         {
             this.command = command;
         }
-        public override Activity UpdateActivity(Activity activity, string name, object value)
+        public override Activity Update(Activity activity, string name, object value)
         {
             var commandLine = $"{command} \"$(args[{name}].path)\"";
             activity.CommandLine.Add(commandLine.Trim());

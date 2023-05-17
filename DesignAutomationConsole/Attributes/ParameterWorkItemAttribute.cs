@@ -4,15 +4,15 @@ using System;
 namespace DesignAutomationConsole.Attributes
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public abstract class ParameterActivityAttribute : Attribute
+    public abstract class ParameterWorkItemAttribute : Attribute
     {
         /// <summary>
         /// Update
         /// </summary>
-        /// <param name="activity"></param>
+        /// <param name="workItem"></param>
         /// <param name="name"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public abstract Activity Update(Activity activity, string name, object value);
+        public abstract WorkItem Update(WorkItem workItem, string name, object value);
     }
 }

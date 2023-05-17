@@ -4,7 +4,7 @@ namespace DesignAutomationConsole.Attributes
 {
     public class ParameterActivityScriptAttribute : ParameterActivityAttribute
     {
-        public override Activity UpdateActivity(Activity activity, string name, object value)
+        public override Activity Update(Activity activity, string name, object value)
         {
             var commandLine = $"/s \"$(settings[{name}].path)\"";
             activity.CommandLine.Add(commandLine);

@@ -37,6 +37,26 @@ namespace DesignAutomationConsole.Services
             this.obj = obj;
         }
 
+        private void ObjectForEachProperties(Action<PropertyInfo, string, object> actionPropertyNameValue)
+        {
+            foreach (var property in obj.GetType().GetProperties())
+            {
+                var name = StringUtils.ConvertUpperToUnderscore(property.Name);
+                var value = property.GetValue(obj);
+                actionPropertyNameValue(property, name, value);
+            }
+        }
+
+        private async Task ObjectForEachProperties(Func<PropertyInfo, string, object, Task> actionPropertyNameValue)
+        {
+            foreach (var property in obj.GetType().GetProperties())
+            {
+                var name = StringUtils.ConvertUpperToUnderscore(property.Name);
+                var value = property.GetValue(obj);
+                await actionPropertyNameValue(property, name, value);
+            }
+        }
+
         public async Task Initialize()
         {
             WriteLine($"Initialize - {typeof(T).Name}");
@@ -45,10 +65,8 @@ namespace DesignAutomationConsole.Services
             Arguments.Clear();
             DownloadFiles.Clear();
 
-            foreach (var property in obj.GetType().GetProperties())
+            await ObjectForEachProperties(async (property, name, value) =>
             {
-                var value = property.GetValue(obj);
-                var name = StringUtils.ConvertUpperToUnderscore(property.Name);
                 if (property.TryGetAttribute(out ParameterInputAttribute parameterInput))
                 {
                     var localName = parameterInput.LocalName;
@@ -128,28 +146,33 @@ namespace DesignAutomationConsole.Services
                     var outputArgument = IArgumentUtils.ToCallbackArgument(callbackArgument);
                     Arguments.Add(name, outputArgument);
                 }
-            }
+            });
         }
 
         public void Update(Activity activity)
         {
             WriteLine($"Update Activity - {activity.Id}");
             activity.Parameters = Parameters;
-            foreach (var property in obj.GetType().GetProperties())
+            ObjectForEachProperties((property, name, value) =>
             {
-                var value = property.GetValue(obj);
-                var name = StringUtils.ConvertUpperToUnderscore(property.Name);
                 foreach (var parameterActivity in property.GetAttributes<ParameterActivityAttribute>())
                 {
-                    parameterActivity.UpdateActivity(activity, name, value);
+                    parameterActivity.Update(activity, name, value);
                 }
-            }
+            });
         }
 
         public void Update(WorkItem workItem)
         {
             WriteLine($"Update WorkItem - {workItem.ActivityId}");
             workItem.Arguments = Arguments;
+            ObjectForEachProperties((property, name, value) =>
+            {
+                foreach (var parameterWorkItem in property.GetAttributes<ParameterWorkItemAttribute>())
+                {
+                    parameterWorkItem.Update(workItem, name, value);
+                }
+            });
         }
 
         public async Task<T> Finalize()
