@@ -137,7 +137,7 @@ namespace DesignAutomationConsole
         {
             IDesignAutomationService service = new RevitDesignAutomationService("DeleteWalls")
             {
-                EnableParameterConsoleLogger = true
+                EnableParameterConsoleLogger = false
             };
             //await service.Initialize(@".\DA\DA4Revit\DeleteWalls.zip");
             await service.Run<RevitParameterOptions>(options =>
@@ -145,18 +145,21 @@ namespace DesignAutomationConsole
                 options.RvtFile = @".\DA\DA4Revit\DeleteWalls2021.rvt";
                 options.Result = @"Result2021.rvt";
             }, "2021");
-            //await service.Run<RevitParameterOptions>(options =>
-            //{
-            //    options.RvtFile = @".\DA\DA4Revit\DeleteWalls2022.rvt";
-            //}, "2022");
-            //await service.Run<RevitParameterOptions>(options =>
-            //{
-            //    options.RvtFile = @".\DA\DA4Revit\DeleteWalls2023.rvt";
-            //}, "2023");
-            //await service.Run<RevitParameterOptions>(options =>
-            //{
-            //    options.RvtFile = @".\DA\DA4Revit\DeleteWalls2024.rvt";
-            //}, "2024");
+            await service.Run<RevitParameterOptions>(options =>
+            {
+                options.RvtFile = @".\DA\DA4Revit\DeleteWalls2022.rvt";
+                options.Result = @"Result2022.rvt";
+            }, "2022");
+            await service.Run<RevitParameterOptions>(options =>
+            {
+                options.RvtFile = @".\DA\DA4Revit\DeleteWalls2023.rvt";
+                options.Result = @"Result2023.rvt";
+            }, "2023");
+            await service.Run<RevitParameterOptions>(options =>
+            {
+                options.RvtFile = @".\DA\DA4Revit\DeleteWalls2024.rvt";
+                options.Result = @"Result2024.rvt";
+            }, "2024");
         }
     }
 }
