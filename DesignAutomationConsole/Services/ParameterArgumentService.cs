@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DesignAutomationConsole.Services
 {
-    public class ParameterArgumentService<T> : IParameterArgumentService<T> where T : class
+    public class ParameterArgumentService<T> : IParameterArgumentService where T : class
     {
         #region Variables
         private readonly IRequestService requestService;
@@ -59,7 +59,9 @@ namespace DesignAutomationConsole.Services
 
         public async Task Initialize()
         {
-            WriteLine($"Initialize - {typeof(T).Name}");
+            var hash = obj.GetHashCode();
+
+            WriteLine($"Initialize - {typeof(T).Name} - {hash}");
 
             Parameters.Clear();
             Arguments.Clear();
@@ -88,7 +90,7 @@ namespace DesignAutomationConsole.Services
                     {
                         if (InputUtils.IsFile(stringValue, out string filePath))
                         {
-                            stringValue = await ossService.UploadFileAsync(filePath, uploadFileName);
+                            stringValue = await ossService.UploadFileAsync(filePath, hash + uploadFileName);
                             WriteLine($"UploadFile: {localName} {stringValue}");
                         }
 
@@ -124,7 +126,8 @@ namespace DesignAutomationConsole.Services
 
                     if (value is null || (string.IsNullOrWhiteSpace(callbackArgument)))
                     {
-                        callbackArgument = await ossService.CreateUrlReadWriteAsync(downloadFileName);
+                        WriteLine($"CreateUrlReadWrite: {localName}");
+                        callbackArgument = await ossService.CreateUrlReadWriteAsync(hash + downloadFileName);
                         if (PropertyUtils.IsPropertyTypeString(property))
                         {
                             property.SetValue(obj, callbackArgument);
@@ -157,6 +160,7 @@ namespace DesignAutomationConsole.Services
             {
                 foreach (var parameterActivity in property.GetAttributes<ParameterActivityAttribute>())
                 {
+                    //WriteLine($"Update Activity - {name} {value}");
                     parameterActivity.Update(activity, name, value);
                 }
             });
@@ -170,13 +174,15 @@ namespace DesignAutomationConsole.Services
             {
                 foreach (var parameterWorkItem in property.GetAttributes<ParameterWorkItemAttribute>())
                 {
+                    //WriteLine($"Update WorkItem - {name} {value}");
                     parameterWorkItem.Update(workItem, name, value);
                 }
             });
         }
 
-        public async Task<T> Finalize()
+        public async Task<bool> Finalize()
         {
+            var result = true;
             foreach (var downloadFile in DownloadFiles)
             {
                 var fileName = downloadFile.FileName;
@@ -200,11 +206,12 @@ namespace DesignAutomationConsole.Services
                 catch (Exception ex)
                 {
                     WriteLine($"DownloadFail: {ex.GetType()}");
+                    result = false;
                 }
             }
 
             WriteLine("Finalize");
-            return this.obj;
+            return result;
         }
 
         #region Console
@@ -212,7 +219,7 @@ namespace DesignAutomationConsole.Services
         private void WriteLine(object message)
         {
             if (EnableConsoleLogger == false) return;
-            Console.WriteLine($"[ParameterArgument] {message}");
+            Console.WriteLine($"[{DateTime.UtcNow}] [ParameterArgument] {message}");
         }
         #endregion
 
@@ -301,11 +308,11 @@ namespace DesignAutomationConsole.Services
         #endregion
     }
 
-    public interface IParameterArgumentService<T>
+    public interface IParameterArgumentService
     {
         public Task Initialize();
         public void Update(Activity activity);
         public void Update(WorkItem workItem);
-        public Task<T> Finalize();
+        public Task<bool> Finalize();
     }
 }

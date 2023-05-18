@@ -25,6 +25,7 @@ namespace DesignAutomationConsole.Services
 
         #region Console
         public bool EnableConsoleLogger { get; set; } = true;
+        public bool EnableParameterConsoleLogger { get; set; } = false;
         private void WriteLine(object message)
         {
             if (EnableConsoleLogger == false) return;
@@ -34,6 +35,7 @@ namespace DesignAutomationConsole.Services
         #endregion
 
         #region init
+        public double RunTimeOutMinutes { get; init; } = 10.0;
         public bool ForceCreateWorkItemReport { get; init; } = false;
         public bool ForceUpdateAppBundle { get; init; } = false;
         public bool ForceUpdateActivity { get; init; } = false;
@@ -149,19 +151,19 @@ namespace DesignAutomationConsole.Services
         }
 
         #region Run
-        public async Task<T> Run<T>(string engine = null) where T : class
+        public async Task<bool> Run<T>(string engine = null) where T : class
         {
             return await Run<T>((obj) => { }, engine);
         }
 
-        public async Task<T> Run<T>(Action<T> options, string engine = null) where T : class
+        public async Task<bool> Run<T>(Action<T> options, string engine = null) where T : class
         {
             var instance = Activator.CreateInstance<T>();
             options?.Invoke(instance);
             return await Run(instance, engine);
         }
 
-        public async Task<T> Run<T>(T options, string engine = null) where T : class
+        public async Task<bool> Run<T>(T options, string engine = null) where T : class
         {
             if (string.IsNullOrEmpty(engine)) engine = CoreEngineVersions().FirstOrDefault();
 
@@ -170,8 +172,11 @@ namespace DesignAutomationConsole.Services
                 throw new Exception($"Engine '{engine}' not found in the CoreEngineVersions");
             }
 
-            IParameterArgumentService<T> parameterArgumentService =
-                new ParameterArgumentService<T>(this, requestService, options);
+            IParameterArgumentService parameterArgumentService =
+                new ParameterArgumentService<T>(this, requestService, options)
+                {
+                    EnableConsoleLogger = EnableParameterConsoleLogger
+                };
 
             await parameterArgumentService.Initialize();
 
@@ -204,6 +209,8 @@ namespace DesignAutomationConsole.Services
                 }
             }
 
+            var result = true;
+
             // WorkItem
             {
                 var workItemStatus = await CreateWorkItemAsync(engine, (workItem) =>
@@ -213,10 +220,10 @@ namespace DesignAutomationConsole.Services
                     //WriteLine($"[WorkItem] Created: {workItem.ToJson()}");
                 });
                 WriteLine($"[WorkItem] Wait: {workItemStatus.Id}");
-                await WorkItemStatusWait(workItemStatus);
+                result &= await WorkItemStatusWait(workItemStatus);
             }
 
-            var result = await parameterArgumentService.Finalize();
+            result &= await parameterArgumentService.Finalize();
 
             return result;
         }
@@ -583,17 +590,17 @@ namespace DesignAutomationConsole.Services
 
             if (cancellationToken == CancellationToken.None)
             {
-                CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromMinutes(10.0));
+                CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromMinutes(RunTimeOutMinutes));
                 cancellationToken = source.Token;
             }
 
             WriteLine($"[Status]: {workItemStatus.Id}");
             while (workItemStatus.Status == Status.Pending | workItemStatus.Status == Status.Inprogress)
             {
-                WriteLine($"[Status]: {workItemStatus.Status} | \t{workItemStatus.GetTimeStarted()}");
+                WriteLine($"[Status]: {workItemStatus.Id} | {workItemStatus.Status} | \t{workItemStatus.GetTimeStarted()}");
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    WriteLine($"[Status]: Cancel | {workItemStatus.Id}");
+                    WriteLine($"[Status]: {workItemStatus.Id} | Cancel");
                     await this.DeleteWorkItemAsync(workItemStatus.Id);
                     workItemStatus.Status = Status.Cancelled;
                     break;
@@ -604,15 +611,15 @@ namespace DesignAutomationConsole.Services
             }
             WorkItems[workItemStatus.Id] = workItemStatus.Status;
 
-            WriteLine($"[Status]: {workItemStatus.Status}");
-            WriteLine($"[Status]: EstimateTime: {workItemStatus.EstimateTime()}");
-            WriteLine($"[Status]: EstimateCosts: {workItemStatus.EstimateCosts():0.0000}");
+            WriteLine($"[Status]: {workItemStatus.Id} | EstimateTime: {workItemStatus.EstimateTime()}");
+            WriteLine($"[Status]: {workItemStatus.Id} | EstimateCosts: {workItemStatus.EstimateCosts():0.0000}");
+            WriteLine($"[Status]: {workItemStatus.Id} | {workItemStatus.Status}");
 
             var report = await CheckWorkItemReportAsync(workItemStatus.Id);
 
             if (ForceCreateWorkItemReport)
             {
-                string fileName = $"report_{workItemStatus.Id}.log";
+                string fileName = $"{appName}_{workItemStatus.Id}.log";
                 WriteLine($"[Status]: File Create: {fileName}");
                 File.WriteAllText(fileName, $"{report}");
             }
@@ -622,9 +629,6 @@ namespace DesignAutomationConsole.Services
                 WriteLine($"[Status]: {report}");
             }
 
-            // Todo: DeleteWorkItem if timeout
-
-            //WriteLine(await CheckWorkItemReportAsync(status.Id));
             return workItemStatus.Status == Status.Success;
         }
 

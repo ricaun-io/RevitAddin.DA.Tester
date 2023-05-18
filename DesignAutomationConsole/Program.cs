@@ -21,6 +21,7 @@
 
 using Autodesk.Forge.Core;
 using Autodesk.Forge.Oss;
+using DesignAutomationConsole.Extensions;
 using DesignAutomationConsole.Models;
 using DesignAutomationConsole.Services;
 using System;
@@ -53,7 +54,9 @@ namespace DesignAutomationConsole
 
             //await DA_Revit_Test();
 
-            await DA_AutoCAD_Test();
+            //await DA_AutoCAD_Test();
+
+            await DA_RevitAddin_DA_Tester();
 
             return;
 
@@ -199,6 +202,43 @@ namespace DesignAutomationConsole
             //await CreateActivities(designAutomationService);
         }
 
+        private static async Task DA_RevitAddin_DA_Tester()
+        {
+            var appName = "RevitAddin_DA_Tester";
+
+            var designAutomationService = new RevitDesignAutomationService(appName)
+            {
+                //EnableParameterConsoleLogger = true
+            };
+
+            //await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
+            //await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
+
+            var engineVersions = designAutomationService.CoreEngineVersions();
+
+            var options = new List<ParameterOptions>();
+            var tasks = new List<Task>();
+            foreach (var engineVersion in engineVersions)
+            {
+                var option = new ParameterOptions()
+                {
+                    Engine = engineVersion,
+                    Input = new InputModel() { Text = engineVersion }
+                };
+                options.Add(option);
+                var daTask = designAutomationService.Run<ParameterOptions>(option, engineVersion);
+                tasks.Add(daTask);
+            }
+
+            await Task.WhenAll(tasks);
+
+            foreach (var option in options)
+            {
+                Console.WriteLine(option.ToJson());
+            }
+
+        }
+
         private static async Task DA_3dsMax_Test()
         {
             IDesignAutomationService service = new MaxDesignAutomationService("ExecuteMaxscript");
@@ -225,6 +265,21 @@ namespace DesignAutomationConsole
             });
 
             //await service.Delete();
+
+            //var t1 = service.Run<AutoCADParameterOptions>(options =>
+            //{
+            //    options.InputDwg = @".\DA\DA4ACAD\ListLayers.dwg";
+            //    options.Script = "(command \"LISTLAYERS\")\n";
+            //});
+
+            //var t2 = service.Run<AutoCADParameterOptions>(options =>
+            //{
+            //    options.InputDwg = @".\DA\DA4ACAD\ListLayers.dwg";
+            //    options.Script = "(command \"LISTLAYERS\")\n";
+            //});
+
+            //await Task.WhenAll(t1, t2);
+
         }
 
         private static async Task DA_Inventor_Test()
