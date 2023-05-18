@@ -40,7 +40,8 @@ namespace DesignAutomationConsole
             //    ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
             //};
 
-            await DA_RevitAddin_DA_Tester();
+            //await DA_RevitAddin_DA_Tester();
+            await DA_Revit_Test();
 
             return;
 
@@ -134,11 +135,15 @@ namespace DesignAutomationConsole
 
         private static async Task DA_Revit_Test()
         {
-            IDesignAutomationService service = new RevitDesignAutomationService("DeleteWalls");
+            IDesignAutomationService service = new RevitDesignAutomationService("DeleteWalls")
+            {
+                EnableParameterConsoleLogger = true
+            };
             //await service.Initialize(@".\DA\DA4Revit\DeleteWalls.zip");
             await service.Run<RevitParameterOptions>(options =>
             {
                 options.RvtFile = @".\DA\DA4Revit\DeleteWalls2021.rvt";
+                options.Result = @"Result2021.rvt";
             }, "2021");
             //await service.Run<RevitParameterOptions>(options =>
             //{

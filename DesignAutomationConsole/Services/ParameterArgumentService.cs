@@ -124,9 +124,23 @@ namespace DesignAutomationConsole.Services
 
                     string callbackArgument = value as string;
 
-                    if (value is null || (string.IsNullOrWhiteSpace(callbackArgument)))
+                    // not url file
+                    if (value is string stringValue)
                     {
-                        WriteLine($"CreateUrlReadWrite: {localName}");
+                        if (!string.IsNullOrWhiteSpace(stringValue))
+                        {
+                            if (!InputUtils.IsUrl(stringValue))
+                            {
+                                callbackArgument = null;
+                                downloadFileName = stringValue;
+                                WriteLine($"DownloadFileName: {downloadFileName}");
+                            }
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(callbackArgument))
+                    {
+                        WriteLine($"CreateUrlReadWrite: {localName} - {downloadFileName}");
                         callbackArgument = await ossService.CreateUrlReadWriteAsync(hash + downloadFileName);
                         if (PropertyUtils.IsPropertyTypeString(property))
                         {
