@@ -1,25 +1,4 @@
-﻿//using Autodesk.Forge.Oss;
-//using System;
-//using System.Threading.Tasks;
-//using Autodesk.Forge.DesignAutomation;
-
-//internal class Program
-//{
-//    public static async Task Main(string[] args)
-//    {
-//        var ossClient = new OssClient();
-
-//        var buckets = await ossClient.GetBucketsAsync();
-//        Console.WriteLine(buckets.ToJson());
-//    }
-//}
-
-
-// Bundle
-// 2018Activity -> Bundle
-// 2018WorkItem -> 2018Activity
-
-using DesignAutomationConsole.Extensions;
+﻿using DesignAutomationConsole.Extensions;
 using DesignAutomationConsole.Models;
 using DesignAutomationConsole.Services;
 using System;
@@ -40,8 +19,7 @@ namespace DesignAutomationConsole
             //    ClientSecret = Environment.GetEnvironmentVariable("FORGE_RICAUN_CLIENT_SECRET")
             //};
 
-            //await DA_RevitAddin_DA_Tester();
-            await DA_Revit_Test();
+            await DA_RevitAddin_DA_Tester();
 
             return;
 
