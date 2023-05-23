@@ -556,7 +556,6 @@ namespace DesignAutomationConsole.Services
         #endregion
 
         #region WorkItem
-
         public async Task DeleteWorkItemAsync(string id)
         {
             await this.designAutomationClient.DeleteWorkItemAsync(id);
