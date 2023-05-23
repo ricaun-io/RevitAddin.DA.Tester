@@ -13,8 +13,6 @@ namespace ricaun.Forge.DesignAutomation.Tests.Models
 
         [ParameterOutput("ResultSmall.ipt", DownloadFile = true)]
         public string OutputIpt { get; set; }
-        //[ParameterOutput("ResultSmall.zip", DownloadFile = true)]
-        //public string OutputIam { get; set; }
         [ParameterOutput("ResultSmall.bmp", DownloadFile = true)]
         public string OutputBmp { get; set; }
 
