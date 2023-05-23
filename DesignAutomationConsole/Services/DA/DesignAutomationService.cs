@@ -43,15 +43,11 @@ namespace DesignAutomationConsole.Services
         public string ForgeEnvironment { get; init; } = "dev";
         #endregion
 
-        #region Console Logger
-
-        #endregion
-
+        #region public
         /// <summary>
         /// WorkItems Id
         /// </summary>
         public Dictionary<string, Status> WorkItems { get; } = new Dictionary<string, Status>();
-        #region public
         public string AppName => appName;
         public DesignAutomationClient DesignAutomationClient => designAutomationClient;
         public OssClient OssClient => ossClient;
@@ -106,6 +102,7 @@ namespace DesignAutomationConsole.Services
 
         #endregion
 
+        #region Initialize/Delete
         public async Task Initialize(string packagePath)
         {
             var tempAppBundle = await TryGetBundleAsync();
@@ -149,6 +146,8 @@ namespace DesignAutomationConsole.Services
                 catch { }
             }
         }
+
+        #endregion
 
         #region Run
         public async Task<bool> Run<T>(string engine = null) where T : class
