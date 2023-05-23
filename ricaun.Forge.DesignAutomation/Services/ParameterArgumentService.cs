@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace ricaun.Forge.DesignAutomation.Services
 {
+    /// <summary>
+    /// ParameterArgumentService
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ParameterArgumentService<T> : IParameterArgumentService where T : class
     {
         #region Variables
@@ -30,6 +34,12 @@ namespace ricaun.Forge.DesignAutomation.Services
         private List<DownloadFile> DownloadFiles { get; } = new List<DownloadFile>();
         #endregion
 
+        /// <summary>
+        /// ParameterArgumentService
+        /// </summary>
+        /// <param name="ossService"></param>
+        /// <param name="requestService"></param>
+        /// <param name="obj"></param>
         public ParameterArgumentService(IOssService ossService, IRequestService requestService, T obj)
         {
             this.ossService = ossService;
@@ -57,6 +67,10 @@ namespace ricaun.Forge.DesignAutomation.Services
             }
         }
 
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        /// <returns></returns>
         public async Task Initialize()
         {
             var hash = obj.GetHashCode();
@@ -166,6 +180,10 @@ namespace ricaun.Forge.DesignAutomation.Services
             });
         }
 
+        /// <summary>
+        /// Update Activity
+        /// </summary>
+        /// <param name="activity"></param>
         public void Update(Activity activity)
         {
             WriteLine($"Update Activity - {activity.Id}");
@@ -180,6 +198,10 @@ namespace ricaun.Forge.DesignAutomation.Services
             });
         }
 
+        /// <summary>
+        /// Update WorkItem
+        /// </summary>
+        /// <param name="workItem"></param>
         public void Update(WorkItem workItem)
         {
             WriteLine($"Update WorkItem - {workItem.ActivityId}");
@@ -194,6 +216,10 @@ namespace ricaun.Forge.DesignAutomation.Services
             });
         }
 
+        /// <summary>
+        /// Finalize
+        /// </summary>
+        /// <returns></returns>
         public async Task<bool> Finalize()
         {
             var result = true;
@@ -229,6 +255,9 @@ namespace ricaun.Forge.DesignAutomation.Services
         }
 
         #region Console
+        /// <summary>
+        /// EnableConsoleLogger
+        /// </summary>
         public bool EnableConsoleLogger { get; set; } = false;
         private void WriteLine(object message)
         {
@@ -303,7 +332,7 @@ namespace ricaun.Forge.DesignAutomation.Services
         #endregion
 
         #region DownloadFile
-        public class DownloadFile
+        internal class DownloadFile
         {
             public string Url { get; set; }
             public string FileName { get; set; }
@@ -322,11 +351,30 @@ namespace ricaun.Forge.DesignAutomation.Services
         #endregion
     }
 
+    /// <summary>
+    /// IParameterArgumentService
+    /// </summary>
     public interface IParameterArgumentService
     {
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        /// <returns></returns>
         public Task Initialize();
+        /// <summary>
+        /// Update Activity
+        /// </summary>
+        /// <param name="activity"></param>
         public void Update(Activity activity);
+        /// <summary>
+        /// Update WorkItem
+        /// </summary>
+        /// <param name="workItem"></param>
         public void Update(WorkItem workItem);
+        /// <summary>
+        /// Finalize
+        /// </summary>
+        /// <returns></returns>
         public Task<bool> Finalize();
     }
 }

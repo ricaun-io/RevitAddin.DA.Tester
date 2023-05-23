@@ -3,6 +3,9 @@ using System;
 
 namespace ricaun.Forge.DesignAutomation.Attributes
 {
+    /// <summary>
+    /// ParameterActivityAttribute
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public abstract class ParameterActivityAttribute : Attribute
     {

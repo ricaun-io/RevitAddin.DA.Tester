@@ -3,6 +3,9 @@ using System;
 
 namespace ricaun.Forge.DesignAutomation.Extensions
 {
+    /// <summary>
+    /// JsonExtension
+    /// </summary>
     public static class JsonExtension
     {
         /// <summary>

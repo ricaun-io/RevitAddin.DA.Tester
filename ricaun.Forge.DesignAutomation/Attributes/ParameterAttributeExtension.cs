@@ -2,8 +2,16 @@
 
 namespace ricaun.Forge.DesignAutomation.Attributes
 {
+    /// <summary>
+    /// ParameterAttributeExtension
+    /// </summary>
     public static class ParameterAttributeExtension
     {
+        /// <summary>
+        /// ToParameter
+        /// </summary>
+        /// <param name="parameterInput"></param>
+        /// <returns></returns>
         public static Parameter ToParameter(this ParameterInputAttribute parameterInput)
         {
             return new Parameter()
@@ -15,6 +23,11 @@ namespace ricaun.Forge.DesignAutomation.Attributes
             };
         }
 
+        /// <summary>
+        /// ToParameter
+        /// </summary>
+        /// <param name="parameterOutput"></param>
+        /// <returns></returns>
         public static Parameter ToParameter(this ParameterOutputAttribute parameterOutput)
         {
             return new Parameter()

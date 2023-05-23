@@ -3,8 +3,18 @@ using System.Linq;
 
 namespace ricaun.Forge.DesignAutomation.Attributes
 {
+    /// <summary>
+    /// ParameterActivityClearBundleAttribute
+    /// </summary>
     public class ParameterActivityClearBundleAttribute : ParameterActivityAttribute
     {
+        /// <summary>
+        /// Update
+        /// </summary>
+        /// <param name="activity"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public override Activity Update(Activity activity, string name, object value)
         {
             var commandLine = "/al";

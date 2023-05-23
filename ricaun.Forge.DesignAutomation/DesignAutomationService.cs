@@ -28,7 +28,13 @@ namespace ricaun.Forge.DesignAutomation
         #endregion
 
         #region Console
-        public bool EnableConsoleLogger { get; set; } = true;
+        /// <summary>
+        /// EnableConsoleLogger
+        /// </summary>
+        public bool EnableConsoleLogger { get; set; } = false;
+        /// <summary>
+        /// EnableParameterConsoleLogger
+        /// </summary>
         public bool EnableParameterConsoleLogger { get; set; } = false;
         private void WriteLine(object message)
         {
@@ -39,11 +45,29 @@ namespace ricaun.Forge.DesignAutomation
         #endregion
 
         #region init
+        /// <summary>
+        /// RunTimeOutMinutes
+        /// </summary>
         public double RunTimeOutMinutes { get; init; } = 10.0;
+        /// <summary>
+        /// ForceCreateWorkItemReport
+        /// </summary>
         public bool ForceCreateWorkItemReport { get; init; } = false;
+        /// <summary>
+        /// ForceUpdateAppBundle
+        /// </summary>
         public bool ForceUpdateAppBundle { get; init; } = false;
+        /// <summary>
+        /// ForceUpdateActivity
+        /// </summary>
         public bool ForceUpdateActivity { get; init; } = false;
+        /// <summary>
+        /// ForceDeleteNotUsed
+        /// </summary>
         public bool ForceDeleteNotUsed { get; init; } = true;
+        /// <summary>
+        /// ForgeEnvironment
+        /// </summary>
         public string ForgeEnvironment { get; init; } = "dev";
         #endregion
 
@@ -52,12 +76,26 @@ namespace ricaun.Forge.DesignAutomation
         /// WorkItems Id
         /// </summary>
         public Dictionary<string, Status> WorkItems { get; } = new Dictionary<string, Status>();
+        /// <summary>
+        /// AppName
+        /// </summary>
         public string AppName => appName;
+        /// <summary>
+        /// DesignAutomationClient
+        /// </summary>
         public DesignAutomationClient DesignAutomationClient => designAutomationClient;
+        /// <summary>
+        /// OssClient
+        /// </summary>
         public OssClient OssClient => ossClient;
         #endregion
 
         #region Constructor
+        /// <summary>
+        /// DesignAutomationService
+        /// </summary>
+        /// <param name="appName"></param>
+        /// <param name="forgeConfiguration"></param>
         public DesignAutomationService(string appName, ForgeConfiguration forgeConfiguration = null)
         {
             this.appName = appName;
@@ -95,18 +133,43 @@ namespace ricaun.Forge.DesignAutomation
         private const string LATEST = "$LATEST";
         private const string BUNDLE_NAME = "Bundle";
         private const string ACTIVITY_NAME = "Activity";
+        /// <summary>
+        /// BundleName
+        /// </summary>
+        /// <returns></returns>
         protected virtual string BundleName() => BUNDLE_NAME;
+        /// <summary>
+        /// ActivityName
+        /// </summary>
+        /// <returns></returns>
         protected virtual string ActivityName() => ACTIVITY_NAME;
         #endregion
 
         #region Names
+        /// <summary>
+        /// CoreEngineVersions
+        /// </summary>
+        /// <returns></returns>
         public abstract string[] CoreEngineVersions();
+        /// <summary>
+        /// CoreEngine
+        /// </summary>
+        /// <returns></returns>
         public abstract string CoreEngine();
+        /// <summary>
+        /// CoreConsoleExe
+        /// </summary>
+        /// <returns></returns>
         public abstract string CoreConsoleExe();
 
         #endregion
 
         #region Initialize/Delete
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        /// <param name="packagePath"></param>
+        /// <returns></returns>
         public async Task Initialize(string packagePath)
         {
             var tempAppBundle = await TryGetBundleAsync();
@@ -132,6 +195,10 @@ namespace ricaun.Forge.DesignAutomation
             }
         }
 
+        /// <summary>
+        /// Delete
+        /// </summary>
+        /// <returns></returns>
         public async Task Delete()
         {
             try
@@ -154,18 +221,37 @@ namespace ricaun.Forge.DesignAutomation
         #endregion
 
         #region Run
+        /// <summary>
+        /// Run
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="engine"></param>
+        /// <returns></returns>
         public async Task<bool> Run<T>(string engine = null) where T : class
         {
             return await Run<T>((obj) => { }, engine);
         }
-
+        /// <summary>
+        /// Run
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="options"></param>
+        /// <param name="engine"></param>
+        /// <returns></returns>
         public async Task<bool> Run<T>(Action<T> options, string engine = null) where T : class
         {
             var instance = Activator.CreateInstance<T>();
             options?.Invoke(instance);
             return await Run(instance, engine);
         }
-
+        /// <summary>
+        /// Run
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="options"></param>
+        /// <param name="engine"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public async Task<bool> Run<T>(T options, string engine = null) where T : class
         {
             if (string.IsNullOrEmpty(engine)) engine = CoreEngineVersions().FirstOrDefault();
@@ -291,7 +377,7 @@ namespace ricaun.Forge.DesignAutomation
 
         #region Bundle
 
-        public async Task<AppBundle> TryGetBundleAsync()
+        internal async Task<AppBundle> TryGetBundleAsync()
         {
             try
             {
@@ -305,7 +391,7 @@ namespace ricaun.Forge.DesignAutomation
             }
         }
 
-        public async Task<IEnumerable<string>> GetAllBundlesAsync(bool account = true)
+        internal async Task<IEnumerable<string>> GetAllBundlesAsync(bool account = true)
         {
             var data = await PageUtils.GetAllItems(this.designAutomationClient.GetAppBundlesAsync);
             if (account)
@@ -318,13 +404,13 @@ namespace ricaun.Forge.DesignAutomation
 
             return data.OrderBy(e => e);
         }
-        public async Task DeleteAppBundleAsync()
+        internal async Task DeleteAppBundleAsync()
         {
             var bundleName = this.GetBundleName(appName);
             await this.designAutomationClient.DeleteAppBundleAsync(bundleName);
         }
 
-        public async Task DeleteAppBundleAliasAsync(string aliasId = null)
+        internal async Task DeleteAppBundleAliasAsync(string aliasId = null)
         {
             if (string.IsNullOrWhiteSpace(aliasId))
                 aliasId = this.ForgeEnvironment;
@@ -333,7 +419,7 @@ namespace ricaun.Forge.DesignAutomation
             await this.designAutomationClient.DeleteAppBundleAliasAsync(bundleName, aliasId);
         }
 
-        public async Task<AppBundle> CreateAppBundleAsync(string packagePath)
+        internal async Task<AppBundle> CreateAppBundleAsync(string packagePath)
         {
             var engine = GetDefaultEngine();
 
@@ -384,7 +470,7 @@ namespace ricaun.Forge.DesignAutomation
         #endregion
 
         #region BundleVersion
-        public async Task<IEnumerable<int>> GetAppBundleVersionsAsync()
+        internal async Task<IEnumerable<int>> GetAppBundleVersionsAsync()
         {
             var bundleName = this.GetBundleName(appName);
 
@@ -392,13 +478,13 @@ namespace ricaun.Forge.DesignAutomation
             return data.OrderBy(e => e);
         }
 
-        public async Task DeleteAppBundleVersionAsync(int version)
+        internal async Task DeleteAppBundleVersionAsync(int version)
         {
             var bundleName = this.GetBundleName(appName);
             await designAutomationClient.DeleteAppBundleVersionAsync(bundleName, version);
         }
 
-        public async Task<IEnumerable<int>> DeleteNotUsedAppBundleVersionsAsync()
+        internal async Task<IEnumerable<int>> DeleteNotUsedAppBundleVersionsAsync()
         {
             var versions = await GetAppBundleVersionsAsync();
             var data = new List<int>();
@@ -526,7 +612,7 @@ namespace ricaun.Forge.DesignAutomation
 
         #region ActivityVersion
 
-        public async Task<IEnumerable<int>> GetActivityVersionsAsync(string engine = null)
+        internal async Task<IEnumerable<int>> GetActivityVersionsAsync(string engine = null)
         {
             engine = GetDefaultEngine(engine);
             var activityName = this.GetActivityName(appName, engine);
@@ -534,14 +620,14 @@ namespace ricaun.Forge.DesignAutomation
             var data = await PageUtils.GetAllItems(this.designAutomationClient.GetActivityVersionsAsync, activityName);
             return data.OrderBy(e => e);
         }
-        public async Task DeleteActivityVersionAsync(int version, string engine = null)
+        internal async Task DeleteActivityVersionAsync(int version, string engine = null)
         {
             engine = GetDefaultEngine(engine);
             var activityName = this.GetActivityName(appName, engine);
             await designAutomationClient.DeleteActivityVersionAsync(activityName, version);
         }
 
-        public async Task<IEnumerable<int>> DeleteNotUsedActivityVersionsAsync(string engine = null)
+        internal async Task<IEnumerable<int>> DeleteNotUsedActivityVersionsAsync(string engine = null)
         {
             var versions = await GetActivityVersionsAsync(engine);
             var data = new List<int>();
@@ -560,12 +646,17 @@ namespace ricaun.Forge.DesignAutomation
         #endregion
 
         #region WorkItem
+        /// <summary>
+        /// DeleteWorkItemAsync
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task DeleteWorkItemAsync(string id)
         {
             await this.designAutomationClient.DeleteWorkItemAsync(id);
         }
 
-        public async Task<WorkItemStatus> CreateWorkItemAsync(string engine = null, Action<WorkItem> settingWorkItem = null)
+        internal async Task<WorkItemStatus> CreateWorkItemAsync(string engine = null, Action<WorkItem> settingWorkItem = null)
         {
             engine = GetDefaultEngine(engine);
 
@@ -586,7 +677,7 @@ namespace ricaun.Forge.DesignAutomation
             return workItemStatus;
         }
 
-        public async Task<bool> WorkItemStatusWait(WorkItemStatus workItemStatus, CancellationToken cancellationToken = default)
+        internal async Task<bool> WorkItemStatusWait(WorkItemStatus workItemStatus, CancellationToken cancellationToken = default)
         {
             const int MillisecondsDelay = 10000;
 
@@ -634,6 +725,11 @@ namespace ricaun.Forge.DesignAutomation
             return workItemStatus.Status == Status.Success;
         }
 
+        /// <summary>
+        /// GetWorkitemStatusAsync
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<WorkItemStatus> GetWorkitemStatusAsync(string id)
         {
             var status = await this.designAutomationClient.GetWorkitemStatusAsync(id);
@@ -641,6 +737,11 @@ namespace ricaun.Forge.DesignAutomation
             return status;
         }
 
+        /// <summary>
+        /// CheckWorkItemReportAsync
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<object> CheckWorkItemReportAsync(string id)
         {
             var status = await GetWorkitemStatusAsync(id);
@@ -655,22 +756,39 @@ namespace ricaun.Forge.DesignAutomation
         #endregion
 
         #region Account
+        /// <summary>
+        /// GetNickname
+        /// </summary>
+        /// <returns></returns>
         public string GetNickname()
         {
             return Task.Run(GetNicknameAsync).GetAwaiter().GetResult();
         }
         private string nickname;
+        /// <summary>
+        /// GetNicknameAsync
+        /// </summary>
+        /// <returns></returns>
         public async Task<string> GetNicknameAsync()
         {
             nickname = nickname ?? await this.designAutomationClient.GetNicknameAsync("me");
             return nickname;
         }
+        /// <summary>
+        /// CreateNicknameAsync
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public async Task CreateNicknameAsync(string name)
         {
             nickname = null;
             NicknameRecord nicknameRecord = new NicknameRecord() { Nickname = name };
             await this.designAutomationClient.CreateNicknameAsync("me", nicknameRecord);
         }
+        /// <summary>
+        /// DeleteForgeAppAsync
+        /// </summary>
+        /// <returns></returns>
         public async Task DeleteForgeAppAsync()
         {
             nickname = null;
@@ -679,6 +797,10 @@ namespace ricaun.Forge.DesignAutomation
         #endregion
 
         #region Engine
+        /// <summary>
+        /// GetEnginesAsync
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<string>> GetEnginesAsync()
         {
             var engines = await PageUtils.GetAllItems(designAutomationClient.GetEnginesAsync);
@@ -733,6 +855,12 @@ namespace ricaun.Forge.DesignAutomation
             return await OssClient.CreateSignedFileAsync(bucketKey, fileName, "readwrite");
         }
 
+        /// <summary>
+        /// UploadFileAsync
+        /// </summary>
+        /// <param name="localFullName"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public async Task<string> UploadFileAsync(string localFullName, string fileName)
         {
             var bucketKey = await CreateOssBucketKey();
@@ -740,6 +868,11 @@ namespace ricaun.Forge.DesignAutomation
             return await OssClient.CreateSignedFileAsync(bucketKey, fileName);
         }
 
+        /// <summary>
+        /// CreateUrlReadWriteAsync
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public async Task<string> CreateUrlReadWriteAsync(string fileName)
         {
             var bucketKey = await CreateOssBucketKey();

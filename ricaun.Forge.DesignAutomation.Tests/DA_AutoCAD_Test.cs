@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using ricaun.Forge.DesignAutomation.Services;
 using ricaun.Forge.DesignAutomation.Tests.Models;
-using ricaun.Forge.DesignAutomation.Tests.Services;
 using System.Threading.Tasks;
 
 namespace ricaun.Forge.DesignAutomation.Tests
@@ -13,11 +12,9 @@ namespace ricaun.Forge.DesignAutomation.Tests
         {
             IDesignAutomationService service = new AutoCADDesignAutomationService("ListLayers")
             {
+                EngineVersions = new[] { "24" },
                 EnableConsoleLogger = true,
                 EnableParameterConsoleLogger = true,
-                //ForceUpdateAppBundle = true,
-                //ForceUpdateActivity = true,
-                //ForceCreateWorkItemReport = true,
             };
             await service.Initialize(@".\DA\DA4ACAD\ListLayers.zip");
             var result = await service.Run<AutoCADParameterOptions>(options =>

@@ -3,7 +3,9 @@ using System;
 
 namespace ricaun.Forge.DesignAutomation.Attributes
 {
-
+    /// <summary>
+    /// ParameterWorkItemAttribute
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public abstract class ParameterWorkItemAttribute : Attribute
     {

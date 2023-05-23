@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using ricaun.Forge.DesignAutomation.Services;
 using ricaun.Forge.DesignAutomation.Tests.Models;
-using ricaun.Forge.DesignAutomation.Tests.Services;
 using System.Threading.Tasks;
 
 namespace ricaun.Forge.DesignAutomation.Tests
@@ -13,6 +12,7 @@ namespace ricaun.Forge.DesignAutomation.Tests
         {
             IDesignAutomationService service = new MaxDesignAutomationService("ExecuteMaxscript")
             {
+                EngineVersions = new[] { "2021" },
                 EnableConsoleLogger = true,
                 EnableParameterConsoleLogger = true,
             };
