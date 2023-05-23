@@ -1,4 +1,4 @@
-﻿using DesignAutomationConsole.Extensions;
+﻿using ricaun.Forge.DesignAutomation.Extensions;
 
 namespace DesignAutomationConsole.Models
 {

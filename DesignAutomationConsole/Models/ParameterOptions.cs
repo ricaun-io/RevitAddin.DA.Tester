@@ -1,4 +1,4 @@
-﻿using DesignAutomationConsole.Attributes;
+﻿using ricaun.Forge.DesignAutomation.Attributes;
 
 namespace DesignAutomationConsole.Models
 {
@@ -13,7 +13,10 @@ namespace DesignAutomationConsole.Models
             Description = "Output file.")]
         public OutputModel Output { get; set; }
 
-        public string Engine { get; set; }
+        //[ParameterWorkItemTimeSec]
+        //public int TimeSec { get; set; } = 60;
+
+        //public string Engine { get; set; }
         //[ParameterActivityLanguage]
         //public string Language { get; set; } = "DEU";
     }
