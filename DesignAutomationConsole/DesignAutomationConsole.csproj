@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ricaun.Autodesk.Forge.Oss.DesignAutomation" Version="*" />
+  </ItemGroup>
+  <!--
+  <ItemGroup>
     <PackageReference Include="ricaun.Autodesk.Forge.Oss" Version="*" />
     <PackageReference Include="Autodesk.Forge.DesignAutomation" Version="*" />
   </ItemGroup>
@@ -13,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ricaun.Forge.DesignAutomation\ricaun.Forge.DesignAutomation.csproj" />
   </ItemGroup>
+  -->
   
   <!-- Fody -->
   <ItemGroup>

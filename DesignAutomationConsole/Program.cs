@@ -1,7 +1,7 @@
-﻿using DesignAutomationConsole.Models;
-using ricaun.Forge.DesignAutomation;
-using ricaun.Forge.DesignAutomation.Extensions;
-using ricaun.Forge.DesignAutomation.Services;
+﻿using Autodesk.Forge.Oss.DesignAutomation;
+using Autodesk.Forge.Oss.DesignAutomation.Extensions;
+using Autodesk.Forge.Oss.DesignAutomation.Services;
+using DesignAutomationConsole.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -32,7 +32,13 @@ namespace DesignAutomationConsole
 
             IDesignAutomationService designAutomationService = new RevitDesignAutomationService(appName)
             {
-                EngineVersions = new[] { "2021", "2022", "2023", "2024" },
+                EngineVersions = new[] {
+                    //"2020",
+                    "2021",
+                    //"2022",
+                    //"2023",
+                    //"2024",
+                },
                 EnableParameterConsoleLogger = true,
                 EnableConsoleLogger = true
             };
