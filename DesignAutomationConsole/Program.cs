@@ -35,17 +35,17 @@ namespace DesignAutomationConsole
                 EngineVersions = new[] {
                     //"2020",
                     "2021",
-                    //"2022",
-                    //"2023",
-                    //"2024",
+                    "2022",
+                    "2023",
+                    "2024",
                 },
                 EnableParameterConsoleLogger = true,
                 EnableConsoleLogger = true
             };
 
             //Console.WriteLine($"Nickname: {designAutomationService.GetNickname()}");
-            //await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
-            await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
+            await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
+            //await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
 
             var engineVersions = designAutomationService.CoreEngineVersions();
 
