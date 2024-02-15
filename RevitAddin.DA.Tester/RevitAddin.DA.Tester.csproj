@@ -91,7 +91,7 @@
 
   <PropertyGroup>
     <PackageId>RevitAddin.DA.Tester</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <ProjectGuid>{7C324916-9F8D-43B0-B226-DA67D2504393}</ProjectGuid>
   </PropertyGroup>
 
@@ -134,7 +134,9 @@
 
   <ItemGroup>
     <PackageReference Include="Autodesk.Forge.DesignAutomation.Revit" Version="$(RevitVersion).*" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.*" IncludeAssets="build; compile" PrivateAssets="All" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.*" IncludeAssets="build; compile" PrivateAssets="All">
+      <NoWarn>NU1903</NoWarn>
+    </PackageReference>
     <PackageReference Include="Revit_All_Main_Versions_API_x64" Version="$(RevitVersion).*" IncludeAssets="build; compile" PrivateAssets="All" />
   </ItemGroup>
 

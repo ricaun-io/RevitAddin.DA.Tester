@@ -19,14 +19,21 @@
   </ItemGroup>
   -->
   
-  <!-- Fody -->
-  <ItemGroup>
-    <PackageReference Include="Costura.Fody" Version="5.*" IncludeAssets="build; compile" PrivateAssets="all" />
-  </ItemGroup>
   <ItemGroup>
     <None Update="Bundle\RevitAddin.DA.Tester.bundle.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Bundle\RevitAddin.DA.Tester.DB.bundle.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Bundle\RevitAddin.DA.Tester.UI.bundle.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <!-- Fody -->
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="5.*" IncludeAssets="build; compile" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>
     <WeaverConfiguration>
@@ -40,7 +47,6 @@
         <Costura CreateTemporaryAssemblies="true" />
       </Weavers>
     </WeaverConfiguration>
-    <AppDesignerFolder>Bundle</AppDesignerFolder>
   </PropertyGroup>
 
 </Project>
