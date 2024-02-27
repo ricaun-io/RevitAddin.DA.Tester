@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.1.0] / 2024-02-15
 - Add `UI.Valid` class to check if Revit UI is available.
+- Unsubscribe to `DesignAutomationReadyEvent` to execute only once.
 
 ## [1.0.1] / 2023-01-09
 ### Fixed
