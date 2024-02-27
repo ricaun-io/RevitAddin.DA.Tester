@@ -26,6 +26,8 @@ namespace RevitAddin.DA.Tester.Revit
 
         private void DesignAutomationBridge_DesignAutomationReadyEvent(object sender, DesignAutomationReadyEventArgs e)
         {
+            DesignAutomationBridge.DesignAutomationReadyEvent -= DesignAutomationBridge_DesignAutomationReadyEvent;
+
             var data = e.DesignAutomationData;
             e.Succeeded = DesignAutomationController.Execute(data.RevitApp, data.FilePath, data.RevitDoc);
         }

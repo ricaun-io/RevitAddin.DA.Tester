@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Build Schema",
   "$ref": "#/definitions/build",
+  "title": "Build Schema",
   "definitions": {
     "build": {
       "type": "object",
@@ -51,6 +51,9 @@
         "MainName": {
           "type": "string"
         },
+        "MiddleVersions": {
+          "type": "boolean"
+        },
         "Name": {
           "type": "string"
         },
@@ -79,11 +82,17 @@
         "ProjectNameFolder": {
           "type": "boolean"
         },
+        "ProjectRemoveTargetFrameworkFolder": {
+          "type": "boolean"
+        },
         "ProjectVersionFolder": {
           "type": "boolean"
         },
         "ReleaseBundle": {
           "type": "boolean"
+        },
+        "ReleaseFolder": {
+          "type": "string"
         },
         "ReleaseNameVersion": {
           "type": "boolean"
