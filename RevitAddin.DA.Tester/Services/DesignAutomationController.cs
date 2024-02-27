@@ -23,6 +23,9 @@ namespace RevitAddin.DA.Tester.Services
             Console.WriteLine($"Output:\t{outputModel}");
             Console.WriteLine("----------------------------------------");
 
+            Console.WriteLine($"UI: {UI.IsValid()}");
+            Console.WriteLine("----------------------------------------");
+
             return true;
         }
     }
