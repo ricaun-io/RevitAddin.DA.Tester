@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.1.0] / 2024-02-15
 - Add `UI.Valid` class to check if Revit UI is available.
 
+## [1.0.1] / 2023-01-09
+### Fixed
+- Fix `DBApplication` misspell
+
 ## [1.0.0] / 2023-01-04
 - First Release
 
 [vNext]: ../../compare/1.0.0...HEAD
 [1.1.0]: ../../compare/1.0.0...1.1.0
+[1.0.1]: ../../compare/1.0.0...1.0.1
 [1.0.0]: ../../compare/1.0.0
