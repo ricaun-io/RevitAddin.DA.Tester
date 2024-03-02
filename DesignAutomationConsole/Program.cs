@@ -36,9 +36,9 @@ namespace DesignAutomationConsole
                 EngineVersions = new[] {
                     //"2019",
                     //"2020",
-                    "2021",
+                    //"2021",
                     //"2022",
-                    //"2023",
+                    "2023",
                     //"2024",
                 },
                 EnableConsoleLogger = true,
@@ -46,8 +46,6 @@ namespace DesignAutomationConsole
                 EnableReportConsoleLogger = true,
             };
 
-            //Console.WriteLine($"Nickname: {designAutomationService.GetNickname()}");
-            //await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.DB.bundle.zip");
             await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
 
             //await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
