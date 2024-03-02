@@ -23,12 +23,6 @@
     <None Update="Bundle\RevitAddin.DA.Tester.bundle.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Bundle\RevitAddin.DA.Tester.DB.bundle.zip">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Bundle\RevitAddin.DA.Tester.UI.bundle.zip">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   
   <!-- Fody -->

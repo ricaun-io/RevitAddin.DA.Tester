@@ -6,6 +6,7 @@ namespace RevitAddin.DA.Tester.Models
     public class InputModel
     {
         public string Text { get; set; }
+        public int Sleep { get; set; }
 
         #region JsonConvert
         private const string JSON_FILE = "input.json";

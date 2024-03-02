@@ -58,7 +58,11 @@ namespace DesignAutomationConsole
             {
                 var option = new ParameterOptions()
                 {
-                    Input = new InputModel() { Text = engineVersion }
+                    Input = new InputModel()
+                    {
+                        Text = engineVersion,
+                        Sleep = 2000
+                    }
                 };
                 options.Add(option);
                 var daTask = designAutomationService.Run<ParameterOptions>(option, engineVersion);

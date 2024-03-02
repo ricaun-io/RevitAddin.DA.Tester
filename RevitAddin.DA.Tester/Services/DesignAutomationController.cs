@@ -23,7 +23,14 @@ namespace RevitAddin.DA.Tester.Services
             Console.WriteLine($"Output:\t{outputModel}");
             Console.WriteLine("----------------------------------------");
 
-            Console.WriteLine($"UI: {UI.IsValid()}");
+            if (inputModel.Sleep > 0)
+            {
+                Console.WriteLine($"Sleep\t{inputModel.Sleep}ms");
+                System.Threading.Thread.Sleep(inputModel.Sleep);
+                Console.WriteLine("----------------------------------------");
+            }
+
+            Console.WriteLine($"UI:\t{UI.IsValid()}");
             Console.WriteLine("----------------------------------------");
 
             return true;

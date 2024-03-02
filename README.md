@@ -21,6 +21,7 @@ Revit Addin project to run in [Design Automation](https://aps.autodesk.com/desig
 public class InputModel
 {
     public string Text { get; set; }
+    public int Sleep { get; set; }
 }
 ```
 
