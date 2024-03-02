@@ -13,12 +13,12 @@
             try
             {
                 var uiapp = UIApplication;
-                System.Console.WriteLine($"UIApplication:\t{uiapp}");
+                //System.Console.WriteLine($"UIApplication:\t{uiapp}");
                 return true;
             }
-            catch (System.Exception ex)
+            catch
             {
-                System.Console.WriteLine($"UIApplication:\t{ex.Message}");
+                //System.Console.WriteLine($"UIApplication:\t{ex.Message}");
                 return false;
             }
         }

@@ -5,6 +5,7 @@ namespace DesignAutomationConsole.Models
     public class InputModel
     {
         public string Text { get; set; }
+        public int Sleep { get; set; }
 
         public override string ToString()
         {
