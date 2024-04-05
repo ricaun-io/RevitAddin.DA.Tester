@@ -38,13 +38,25 @@ namespace DesignAutomationConsole
                     //"2020",
                     //"2021",
                     //"2022",
-                    "2023",
+                    //"2023",
                     //"2024",
+                    "2025",
                 },
                 EnableConsoleLogger = true,
                 //EnableParameterConsoleLogger = true,
                 EnableReportConsoleLogger = true,
+                RunTimeOutMinutes = 5,
             };
+
+            //var revit = new RevitDesignAutomationService(appName);
+            //var engines = await revit.GetEnginesAsync();
+            //foreach ( var engine in engines )
+            //{
+            //    Console.WriteLine(engine);
+            //}
+
+            //var status = await revit.GetWorkitemStatusAsync("id");
+            //Console.WriteLine(status.Status);
 
             await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
 

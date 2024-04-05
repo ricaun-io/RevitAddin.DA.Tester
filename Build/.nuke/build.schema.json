@@ -64,6 +64,14 @@
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
         },
+        "NugetApiKey": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "NugetApiUrl": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
         "Partition": {
           "type": "string",
           "description": "Partition to use on CI"
@@ -71,6 +79,12 @@
         "Plan": {
           "type": "boolean",
           "description": "Shows the execution plan (HTML)"
+        },
+        "PreReleaseFilter": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "Profile": {
           "type": "array",
@@ -121,8 +135,11 @@
               "Build",
               "Clean",
               "Compile",
+              "GitPreRelease",
               "GitRelease",
+              "Pack",
               "PackageBuilder",
+              "PrePack",
               "Release",
               "Sign"
             ]
@@ -141,12 +158,18 @@
               "Build",
               "Clean",
               "Compile",
+              "GitPreRelease",
               "GitRelease",
+              "Pack",
               "PackageBuilder",
+              "PrePack",
               "Release",
               "Sign"
             ]
           }
+        },
+        "UnlistNuget": {
+          "type": "boolean"
         },
         "VendorDescription": {
           "type": "string"
