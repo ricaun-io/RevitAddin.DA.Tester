@@ -105,6 +105,9 @@
         "ReleaseBundle": {
           "type": "boolean"
         },
+        "ReleaseExample": {
+          "type": "boolean"
+        },
         "ReleaseFolder": {
           "type": "string"
         },
@@ -133,6 +136,7 @@
             "type": "string",
             "enum": [
               "Build",
+              "BuildConsole",
               "Clean",
               "Compile",
               "GitPreRelease",
@@ -156,6 +160,7 @@
             "type": "string",
             "enum": [
               "Build",
+              "BuildConsole",
               "Clean",
               "Compile",
               "GitPreRelease",

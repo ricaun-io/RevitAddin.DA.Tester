@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.3.0] / 2025-04-05
 - Update to Revit 2025
+- Build `DesignAutomationConsole`.
 
 ## [1.2.0] / 2024-03-02
 - Add `Sleep` in milliseconds input.
