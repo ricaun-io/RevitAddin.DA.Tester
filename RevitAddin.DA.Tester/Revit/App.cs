@@ -13,6 +13,8 @@ namespace RevitAddin.DA.Tester.Revit
             Console.WriteLine("----------------------------------------");
             Console.WriteLine(this.GetType().Assembly.FullName);
             Console.WriteLine("----------------------------------------");
+            Console.WriteLine(this.GetType().Assembly.Location);
+            Console.WriteLine("----------------------------------------");
 
             DesignAutomationBridge.DesignAutomationReadyEvent += DesignAutomationBridge_DesignAutomationReadyEvent;
             return ExternalDBApplicationResult.Succeeded;

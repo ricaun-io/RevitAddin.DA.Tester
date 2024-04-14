@@ -21,7 +21,7 @@
   
   <ItemGroup>
     <None Update="Bundle\RevitAddin.DA.Tester.bundle.zip">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   
