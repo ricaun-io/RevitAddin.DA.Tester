@@ -8,5 +8,7 @@ namespace DesignAutomationConsole.Models
         public string VersionBuild { get; set; }
         public DateTime TimeStart { get; set; } = DateTime.UtcNow;
         public string Text { get; set; }
+        public string Reference { get; set; }
+        public string FrameworkName { get; set; }
     }
 }

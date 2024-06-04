@@ -14,6 +14,8 @@ namespace RevitAddin.DA.Tester.Models
         public string VersionBuild { get; set; }
         public DateTime TimeStart { get; set; } = DateTime.UtcNow;
         public string Text { get; set; }
+        public string Reference { get; set; }
+        public string FrameworkName { get; set; }
 
         #region JsonConvert
         private const string JSON_FILE = "output.json";

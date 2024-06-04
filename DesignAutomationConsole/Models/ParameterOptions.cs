@@ -13,6 +13,9 @@ namespace DesignAutomationConsole.Models
             Description = "Output file.")]
         public OutputModel Output { get; set; }
 
+        //[ParameterOutput("console.txt", DownloadFile = true)]
+        //public string Console { get; set; }
+
         //[ParameterWorkItemTimeSec]
         //public int TimeSec { get; set; } = 60;
 

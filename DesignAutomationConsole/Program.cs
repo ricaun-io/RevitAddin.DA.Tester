@@ -26,9 +26,6 @@ namespace DesignAutomationConsole
 
         private static async Task DA_RevitAddin_DA_Tester()
         {
-            const string RequestUri =
-                "https://github.com/ricaun-io/RevitAddin.DA.Tester/releases/latest/download/RevitAddin.DA.Tester.bundle.zip";
-
             var appName = "RevitAddin_DA_Tester";
 
             IDesignAutomationService designAutomationService = new RevitDesignAutomationService(appName)
@@ -38,16 +35,30 @@ namespace DesignAutomationConsole
                     //"2020",
                     //"2021",
                     //"2022",
-                    "2023",
+                    //"2023",
                     //"2024",
+                    "2025",
                 },
                 EnableConsoleLogger = true,
                 //EnableParameterConsoleLogger = true,
                 EnableReportConsoleLogger = true,
+                RunTimeOutMinutes = 5,
             };
+
+            //var revit = new RevitDesignAutomationService(appName);
+            //var engines = await revit.GetEnginesAsync();
+            //foreach ( var engine in engines )
+            //{
+            //    Console.WriteLine(engine);
+            //}
+
+            //var status = await revit.GetWorkitemStatusAsync("id");
+            //Console.WriteLine(status.Status);
 
             await designAutomationService.Initialize($".\\Bundle\\RevitAddin.DA.Tester.bundle.zip");
 
+            //const string RequestUri =
+            //    "https://github.com/ricaun-io/RevitAddin.DA.Tester/releases/latest/download/RevitAddin.DA.Tester.bundle.zip";
             //await designAutomationService.Initialize(await RequestService.Instance.GetFileAsync(RequestUri));
 
             var engineVersions = designAutomationService.CoreEngineVersions();
@@ -61,7 +72,7 @@ namespace DesignAutomationConsole
                     Input = new InputModel()
                     {
                         Text = engineVersion,
-                        Sleep = 2000
+                        Sleep = 1000
                     }
                 };
                 options.Add(option);

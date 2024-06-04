@@ -2,6 +2,9 @@
 using Autodesk.Revit.DB;
 using RevitAddin.DA.Tester.Models;
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Versioning;
 
 namespace RevitAddin.DA.Tester.Services
 {
@@ -14,6 +17,8 @@ namespace RevitAddin.DA.Tester.Services
             var outputModel = new OutputModel();
             outputModel.VersionBuild = application.VersionBuild;
             outputModel.VersionName = application.VersionName;
+            outputModel.Reference = outputModel.GetType().Assembly.GetReferencedAssemblies().FirstOrDefault(e => e.Name.Contains("RevitAPI"))?.Version.ToString();
+            outputModel.FrameworkName = outputModel.GetType().Assembly.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName;
             outputModel.Text = inputModel.Text;
 
             outputModel.Save();
