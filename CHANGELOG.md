@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Build `DesignAutomationConsole`.
 - Add `FrameworkName` and `Reference` in the output.
 - Issue with Design Automation for Revit not selecting the right version of the addin in the bundle. #7
+- Set bundle with version 2019, 2021, and 2025.
 
 ## [1.2.0] / 2024-03-02
 - Add `Sleep` in milliseconds input.
