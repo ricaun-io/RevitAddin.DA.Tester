@@ -11,9 +11,11 @@ namespace RevitAddin.DA.Tester.Revit
         public ExternalDBApplicationResult OnStartup(ControlledApplication application)
         {
             Console.WriteLine("----------------------------------------");
-            Console.WriteLine(this.GetType().Assembly.FullName);
+            Console.WriteLine($"FullName: \t{this.GetType().Assembly.FullName}");
             Console.WriteLine("----------------------------------------");
-            Console.WriteLine(this.GetType().Assembly.Location);
+            Console.WriteLine($"Location: {this.GetType().Assembly.Location}");
+            Console.WriteLine("----------------------------------------");
+            Console.WriteLine($"AddInId: \t{application.ActiveAddInId?.GetAddInName()}");
             Console.WriteLine("----------------------------------------");
 
             DesignAutomationBridge.DesignAutomationReadyEvent += DesignAutomationBridge_DesignAutomationReadyEvent;

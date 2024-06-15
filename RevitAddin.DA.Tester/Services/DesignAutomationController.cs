@@ -15,6 +15,7 @@ namespace RevitAddin.DA.Tester.Services
             var inputModel = new InputModel().Load();
 
             var outputModel = new OutputModel();
+            outputModel.AddInId = application.ActiveAddInId?.GetAddInName();
             outputModel.VersionBuild = application.VersionBuild;
             outputModel.VersionName = application.VersionName;
             outputModel.Reference = outputModel.GetType().Assembly.GetReferencedAssemblies().FirstOrDefault(e => e.Name.Contains("RevitAPI"))?.Version.ToString();
@@ -24,6 +25,7 @@ namespace RevitAddin.DA.Tester.Services
             outputModel.Save();
 
             Console.WriteLine("----------------------------------------");
+            Console.WriteLine($"AddInId: \t{application.ActiveAddInId?.GetAddInName()}");
             Console.WriteLine($"Input:\t{inputModel}");
             Console.WriteLine($"Output:\t{outputModel}");
             Console.WriteLine("----------------------------------------");

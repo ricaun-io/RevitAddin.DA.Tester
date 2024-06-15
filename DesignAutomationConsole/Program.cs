@@ -33,11 +33,11 @@ namespace DesignAutomationConsole
                 EngineVersions = new[] {
                     //"2019",
                     //"2020",
-                    //"2021",
+                    "2021",
                     //"2022",
                     //"2023",
                     //"2024",
-                    "2025",
+                    //"2025",
                 },
                 EnableConsoleLogger = true,
                 //EnableParameterConsoleLogger = true,
