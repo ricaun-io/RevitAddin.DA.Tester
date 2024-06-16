@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.3.1] / 2025-06-15
 - Add `AddInId` in the output. #9
+- Update `AddInId` to `AddInName` in model class.
 
 ## [1.3.0] / 2025-04-05
 - Update to Revit 2025

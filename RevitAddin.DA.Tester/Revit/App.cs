@@ -15,7 +15,7 @@ namespace RevitAddin.DA.Tester.Revit
             Console.WriteLine("----------------------------------------");
             Console.WriteLine($"Location: {this.GetType().Assembly.Location}");
             Console.WriteLine("----------------------------------------");
-            Console.WriteLine($"AddInId: \t{application.ActiveAddInId?.GetAddInName()}");
+            Console.WriteLine($"AddInName: \t{application.ActiveAddInId?.GetAddInName()}");
             Console.WriteLine("----------------------------------------");
 
             DesignAutomationBridge.DesignAutomationReadyEvent += DesignAutomationBridge_DesignAutomationReadyEvent;
