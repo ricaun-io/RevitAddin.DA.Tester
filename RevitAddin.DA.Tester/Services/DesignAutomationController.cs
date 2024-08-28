@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
 using RevitAddin.DA.Tester.Models;
+using RevitAddin.DA.Tester.Revit;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -8,9 +9,9 @@ using System.Runtime.Versioning;
 
 namespace RevitAddin.DA.Tester.Services
 {
-    public class DesignAutomationController
+    public class DesignAutomationController : IDesignAutomation
     {
-        public static bool Execute(Application application, string filePath = null, Document document = null)
+        public bool Execute(Application application, string filePath = null, Document document = null)
         {
             var inputModel = new InputModel().Load();
 
@@ -38,6 +39,9 @@ namespace RevitAddin.DA.Tester.Services
             }
 
             Console.WriteLine($"UI:\t{UI.IsValid()}");
+            Console.WriteLine("----------------------------------------");
+            Console.WriteLine($"Shape:\t{typeof(ricaun.Revit.DB.Shape.Colors).Assembly}");
+            Console.WriteLine($"Shape Location:\t{typeof(ricaun.Revit.DB.Shape.Colors).Assembly.Location}");
             Console.WriteLine("----------------------------------------");
 
             return true;

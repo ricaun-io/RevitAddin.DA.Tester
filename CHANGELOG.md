@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] / 2025-08-27
+### Features
+- Support Bundle multiple versions of Revit using `DesignAutomationLoadVersion`. (#7)
+### Updates
+- Add `DesignAutomation` and `IDesignAutomation` interface.
+- Add `DesignAutomationLoadVersion` to load the right version of the addin.
+- Add `AssemblyResolve` in the `DesignAutomationLoadVersion` to load dependencies in the right version.
+- Use `where T : IDesignAutomation` in `DesignAutomation<T>` and `DesignAutomationLoadVersion<T>`.
+- Fix `DesignAutomation` method selection by finding first method `Execute` with 3 parameters.
+
 ## [1.3.1] / 2025-06-15 - 2025-08-27
 - Add `AddInId` in the output. #9
 - Update `AddInId` to `AddInName` in model class.
@@ -30,6 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - First Release
 
 [vNext]: ../../compare/1.0.0...HEAD
+[1.4.0]: ../../compare/1.3.1...1.4.0
 [1.3.1]: ../../compare/1.3.0...1.3.1
 [1.3.0]: ../../compare/1.2.0...1.3.0
 [1.2.0]: ../../compare/1.1.0...1.2.0

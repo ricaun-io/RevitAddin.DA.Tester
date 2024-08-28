@@ -75,7 +75,7 @@
 
   <PropertyGroup>
     <PackageId>RevitAddin.DA.Tester</PackageId>
-    <Version>1.3.1</Version>
+    <Version>1.4.0</Version>
     <ProjectGuid>{7C324916-9F8D-43B0-B226-DA67D2504393}</ProjectGuid>
   </PropertyGroup>
 
@@ -128,6 +128,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ricaun.Revit.DB.Shape" Version="*" />
     <PackageReference Include="Autodesk.Forge.DesignAutomation.Revit" Version="$(RevitVersion).*" />
   </ItemGroup>
 
