@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add `DesignAutomation` and `IDesignAutomation` interface.
 - Add `DesignAutomationLoadVersion` to load the right version of the addin.
 - Add `AssemblyResolve` in the `DesignAutomationLoadVersion` to load dependencies in the right version.
+- Use `where T : IDesignAutomation` in `DesignAutomation<T>` and `DesignAutomationLoadVersion<T>`.
 
 ## [1.3.1] / 2025-06-15 - 2025-08-27
 - Add `AddInId` in the output. #9

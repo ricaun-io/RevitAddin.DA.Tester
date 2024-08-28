@@ -3,7 +3,7 @@ using System;
 
 namespace RevitAddin.DA.Tester.Revit
 {
-    public class DesignAutomation<T> : DesignAutomation
+    public class DesignAutomation<T> : DesignAutomation where T : IDesignAutomation
     {
         public DesignAutomation() : base(Activator.CreateInstance(typeof(T)))
         {

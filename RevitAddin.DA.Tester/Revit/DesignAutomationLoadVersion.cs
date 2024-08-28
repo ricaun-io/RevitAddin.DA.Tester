@@ -6,6 +6,14 @@ using System.Runtime.Versioning;
 
 namespace RevitAddin.DA.Tester.Revit
 {
+    public class DesignAutomationLoadVersion<T> : DesignAutomationLoadVersion where T : IDesignAutomation
+    {
+        public DesignAutomationLoadVersion() : base(typeof(T))
+        {
+
+        }
+    }
+
     public class DesignAutomationLoadVersion : IDisposable
     {
         readonly IDisposable designAutomation;

@@ -18,7 +18,7 @@ namespace RevitAddin.DA.Tester.Revit
             Console.WriteLine($"AddInName: \t{application.ActiveAddInId?.GetAddInName()}");
             Console.WriteLine("----------------------------------------");
 
-            designAutomation = new DesignAutomationLoadVersion(typeof(DesignAutomationController));
+            designAutomation = new DesignAutomationLoadVersion<DesignAutomationController>();
             return ExternalDBApplicationResult.Succeeded;
         }
 
