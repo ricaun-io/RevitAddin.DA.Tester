@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.4.0] / 2025-08-27
 ### Features
+- Support Bundle multiple versions of Revit using `DesignAutomationLoadVersion`.
+### Updates
 - Add `DesignAutomation` and `IDesignAutomation` interface.
 - Add `DesignAutomationLoadVersion` to load the right version of the addin.
 - Add `AssemblyResolve` in the `DesignAutomationLoadVersion` to load dependencies in the right version.
