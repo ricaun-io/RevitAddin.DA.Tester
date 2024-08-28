@@ -8,7 +8,9 @@ namespace RevitAddin.DA.Tester.Revit
 {
     public class DesignAutomationLoadVersion : IDisposable
     {
-        IDisposable designAutomation;
+        readonly IDisposable designAutomation;
+        readonly Assembly loadAssembly;
+
         public DesignAutomationLoadVersion(Type type)
         {
             var location = type.Assembly.Location;
@@ -20,7 +22,7 @@ namespace RevitAddin.DA.Tester.Revit
 
             Console.WriteLine($"DesignAutomationLoadVersion: \t{revitVersion} -> {revitReferenceVersion}");
 
-            for (int version = revitVersion; version >= revitReferenceVersion; version--)
+            for (int version = revitVersion; version > revitReferenceVersion; version--)
             {
                 var directory = System.IO.Path.GetDirectoryName(location);
                 var directoryVersionRevit = System.IO.Path.Combine(directory, "..", version.ToString());
@@ -30,11 +32,13 @@ namespace RevitAddin.DA.Tester.Revit
 
                 if (File.Exists(fileName))
                 {
-                    Console.WriteLine($"DesignAutomationLoadVersion File Exists: \t{new FileInfo(fileName).FullName}");
+                    fileName = new FileInfo(fileName).FullName;
+                    Console.WriteLine($"DesignAutomationLoadVersion File Exists: \t{fileName}");
                     Console.WriteLine($"DesignAutomationLoadVersion Version: \t{version}");
                     Console.WriteLine($"DesignAutomationLoadVersion LoadFile: \t{Path.GetFileName(fileName)}");
-                    var assembly = Assembly.LoadFile(fileName);
-                    type = assembly.GetType(type.FullName);
+                    AppDomain.CurrentDomain.AssemblyResolve += LoadAssemblyResolve;
+                    loadAssembly = Assembly.LoadFile(fileName);
+                    type = loadAssembly.GetType(type.FullName);
                     break;
                 }
             }
@@ -44,9 +48,24 @@ namespace RevitAddin.DA.Tester.Revit
             Console.WriteLine($"DesignAutomationLoadVersion FrameworkName: \t{type.Assembly.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName}");
             designAutomation = new DesignAutomation(type);
         }
+
+        private Assembly LoadAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var assemblyName = new AssemblyName(args.Name);
+            var assemblyPath = Path.Combine(Path.GetDirectoryName(loadAssembly.Location), assemblyName.Name + ".dll");
+            if (File.Exists(assemblyPath))
+            {
+                var folderName = Path.GetFileName(Path.GetDirectoryName(assemblyPath));
+                Console.WriteLine($"AssemblyResolve LoadFile: {folderName}\\{assemblyName.Name + ".dll"}");
+                return Assembly.LoadFile(assemblyPath);
+            }
+            return null;
+        }
+
         public void Dispose()
         {
             designAutomation?.Dispose();
+            AppDomain.CurrentDomain.AssemblyResolve -= LoadAssemblyResolve;
         }
     }
 }
