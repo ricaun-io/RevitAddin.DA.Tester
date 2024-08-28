@@ -6,19 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ricaun.Autodesk.Forge.Oss.DesignAutomation" Version="*" />
-  </ItemGroup>
-  <!--
-  <ItemGroup>
-    <PackageReference Include="ricaun.Autodesk.Forge.Oss" Version="*" />
-    <PackageReference Include="Autodesk.Forge.DesignAutomation" Version="*" />
+    <PackageReference Include="ricaun.Autodesk.Forge.Oss.DesignAutomation" Version="*-*" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ricaun.Forge.DesignAutomation\ricaun.Forge.DesignAutomation.csproj" />
-  </ItemGroup>
-  -->
-  
   <ItemGroup>
     <None Update="Bundle\RevitAddin.DA.Tester.bundle.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
