@@ -1,5 +1,6 @@
 ﻿using DesignAutomationFramework;
 using System;
+using System.Linq;
 
 namespace RevitAddin.DA.Tester.Revit
 {
@@ -49,9 +50,18 @@ namespace RevitAddin.DA.Tester.Revit
 
             var data = e.DesignAutomationData;
 
+            Console.WriteLine("--------------------------------------------------");
+            Console.WriteLine($"RevitApp: {data.RevitApp} FilePath: {data.FilePath} RevitDoc: {data.RevitDoc}");
+            Console.WriteLine("--------------------------------------------------");
+
             try
             {
-                var method = instance.GetType().GetMethod(nameof(IDesignAutomation.Execute));
+                var method = instance.GetType().GetMethods()
+                    .Where(e => e.Name.Equals(nameof(IDesignAutomation.Execute)))
+                    .FirstOrDefault(e => e.GetParameters().Count() == 3);
+
+                Console.WriteLine($"Invoke: {method}");
+
                 var result = method.Invoke(instance, new object[] { data.RevitApp, data.FilePath, data.RevitDoc });
 
                 if (result is bool resultBool)
