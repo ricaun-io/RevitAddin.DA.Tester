@@ -49,9 +49,9 @@ namespace RevitAddin.DA.Tester.Revit
 
             var data = e.DesignAutomationData;
 
-            var method = instance.GetType().GetMethod(nameof(IDesignAutomation.Execute));
             try
             {
+                var method = instance.GetType().GetMethod(nameof(IDesignAutomation.Execute));
                 var result = method.Invoke(instance, new object[] { data.RevitApp, data.FilePath, data.RevitDoc });
 
                 if (result is bool resultBool)

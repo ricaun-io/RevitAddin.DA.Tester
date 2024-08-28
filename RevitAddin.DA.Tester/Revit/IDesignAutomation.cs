@@ -5,6 +5,6 @@ namespace RevitAddin.DA.Tester.Revit
 {
     public interface IDesignAutomation
     {
-        bool Execute(Application application, string filePath, Document documnt);
+        bool Execute(Application application, string filePath, Document document);
     }
 }
