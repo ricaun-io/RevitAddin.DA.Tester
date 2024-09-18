@@ -75,7 +75,7 @@
 
   <PropertyGroup>
     <PackageId>RevitAddin.DA.Tester</PackageId>
-    <Version>1.4.1-alpha</Version>
+    <Version>1.4.1-beta</Version>
     <ProjectGuid>{7C324916-9F8D-43B0-B226-DA67D2504393}</ProjectGuid>
   </PropertyGroup>
 
