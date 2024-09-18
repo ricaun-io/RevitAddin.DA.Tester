@@ -9,7 +9,7 @@ using System.Runtime.Versioning;
 
 namespace RevitAddin.DA.Tester.Services
 {
-    public class DesignAutomationController : IDesignAutomation
+    public class DesignAutomationController
     {
         public bool Execute(Application application, string filePath = null, Document document = null)
         {

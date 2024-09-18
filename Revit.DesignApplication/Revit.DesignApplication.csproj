@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- RevitVersion -->
+  <PropertyGroup>
+    <TargetFrameworks>net47;net48;net8.0-windows</TargetFrameworks>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+  <Choose>
+    <When Condition="$(TargetFramework.StartsWith('net46'))">
+      <PropertyGroup>
+        <RevitVersion>2017</RevitVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(TargetFramework.StartsWith('net47'))">
+      <PropertyGroup>
+        <RevitVersion>2019</RevitVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(TargetFramework.StartsWith('net48'))">
+      <PropertyGroup>
+        <RevitVersion>2021</RevitVersion>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <RevitVersion>2025</RevitVersion>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <!-- Net Core -->
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('net4'))">
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+  </PropertyGroup>
+
+  <!-- Release -->
+  <PropertyGroup Condition="!$(Configuration.Contains('Debug'))">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\$(RevitVersion)</OutputPath>
+    <DefineConstants>REVIT$(RevitVersion)</DefineConstants>
+    <NoWarn>MSB3052</NoWarn>
+    <DebugType>None</DebugType>
+  </PropertyGroup>
+
+  <!-- Debug -->
+  <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;REVIT$(RevitVersion)</DefineConstants>
+    <DebugType>Full</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autodesk.Forge.DesignAutomation.Revit" Version="$(RevitVersion).*" IncludeAssets="build; compile" PrivateAssets="All" />
+    <PackageReference Include="Revit_All_Main_Versions_API_x64" Version="$(RevitVersion).*" IncludeAssets="build; compile" PrivateAssets="All" />
+  </ItemGroup>
+  
+</Project>
