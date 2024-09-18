@@ -6,9 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.4.1] / 2025-09-18
 ### Features
-- Create `Revit.DesignApplication` with `DesignApplication` to load correct version of Revit.
+- Create `Revit.DesignApplication` with `DesignApplication` to load correct assembly version in the bundle. (#7)
 ### Updates
-- Use `DesignApplication` to load correct version of Revit.
+- Use `DesignApplication` to load correct assembly version in the bundle.
 - Add `ApplicationInitialized` event to test.
 
 ## [1.4.0] / 2025-08-27
