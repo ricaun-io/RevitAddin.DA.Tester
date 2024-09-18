@@ -65,7 +65,7 @@ namespace Revit.DesignApplication
             var data = e.DesignAutomationData;
 
             Console.WriteLine("--------------------------------------------------");
-            Console.WriteLine($"RevitApp: {data.RevitApp} \tFilePath: {data.FilePath} \tRevitDoc: {data.RevitDoc} \nAddInName:{data.RevitApp.ActiveAddInId?.GetAddInName()}");
+            Console.WriteLine($"RevitApp: {data.RevitApp} \tFilePath: {data.FilePath} \tRevitDoc: {data.RevitDoc} \tAddInName:{data.RevitApp.ActiveAddInId?.GetAddInName()}");
             Console.WriteLine("--------------------------------------------------");
 
             e.Succeeded = Execute(data.RevitApp, data.FilePath, data.RevitDoc);
