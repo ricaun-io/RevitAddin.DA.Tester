@@ -9,7 +9,7 @@ using System.Runtime.Versioning;
 
 namespace RevitAddin.DA.Tester.Services
 {
-    public class DesignAutomationController : IDesignAutomation
+    public class DesignAutomationController
     {
         public bool Execute(Application application, string filePath = null, Document document = null)
         {
@@ -39,6 +39,7 @@ namespace RevitAddin.DA.Tester.Services
             }
 
             Console.WriteLine($"UI:\t{UI.IsValid()}");
+            Console.WriteLine($"App.AddInName:\t{App.AddInName}");
             Console.WriteLine("----------------------------------------");
             Console.WriteLine($"Shape:\t{typeof(ricaun.Revit.DB.Shape.Colors).Assembly}");
             Console.WriteLine($"Shape Location:\t{typeof(ricaun.Revit.DB.Shape.Colors).Assembly.Location}");

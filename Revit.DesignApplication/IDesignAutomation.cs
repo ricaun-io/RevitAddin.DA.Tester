@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
 
-namespace RevitAddin.DA.Tester.Revit
+namespace Revit.DesignApplication
 {
     public interface IDesignAutomation
     {
