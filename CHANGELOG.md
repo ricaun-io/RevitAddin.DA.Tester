@@ -4,14 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [1.4.1] / 2025-09-18
+## [1.4.2] / 2025-01-16
+### Features
+- Add `ApplicationExtensions` to check `InAddInContext` and `InEventContext`.
+### Updates
+- Update `Build` copy.
+
+## [1.4.1] / 2024-09-18
 ### Features
 - Create `Revit.DesignApplication` with `DesignApplication` to load correct assembly version in the bundle. (#7)
 ### Updates
 - Use `DesignApplication` to load correct assembly version in the bundle.
 - Add `ApplicationInitialized` event to test.
 
-## [1.4.0] / 2025-08-27
+## [1.4.0] / 2024-08-27
 ### Features
 - Support Bundle multiple versions of Revit using `DesignAutomationLoadVersion`. (#7)
 ### Updates
@@ -21,11 +27,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Use `where T : IDesignAutomation` in `DesignAutomation<T>` and `DesignAutomationLoadVersion<T>`.
 - Fix `DesignAutomation` method selection by finding first method `Execute` with 3 parameters.
 
-## [1.3.1] / 2025-06-15 - 2025-08-27
+## [1.3.1] / 2024-06-15 - 2024-08-27
 - Add `AddInId` in the output. #9
 - Update `AddInId` to `AddInName` in model class.
 
-## [1.3.0] / 2025-04-05
+## [1.3.0] / 2024-04-05
 - Update to Revit 2025
 - Build `DesignAutomationConsole`.
 - Add `FrameworkName` and `Reference` in the output.
@@ -47,6 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - First Release
 
 [vNext]: ../../compare/1.0.0...HEAD
+[1.4.2]: ../../compare/1.4.1...1.4.2
 [1.4.1]: ../../compare/1.4.0...1.4.1
 [1.4.0]: ../../compare/1.3.1...1.4.0
 [1.3.1]: ../../compare/1.3.0...1.3.1
