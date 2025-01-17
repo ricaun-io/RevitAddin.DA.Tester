@@ -14,6 +14,7 @@
             {
                 application.ProgressChanged += Application_ProgressChanged;
                 application.ProgressChanged -= Application_ProgressChanged;
+                return true;
             }
             catch { }
             return false;
