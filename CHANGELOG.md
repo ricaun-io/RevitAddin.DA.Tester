@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.4.2] / 2025-01-16
 ### Features
 - Add `ApplicationExtensions` to check `InAddInContext` and `InEventContext`.
+- Add `DocumentCreated` event to confirm `ActiveAddInId` is null inside event.
 ### Updates
 - Update `Build` copy.
 
