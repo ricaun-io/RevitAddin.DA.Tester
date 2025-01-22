@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] / 2025-01-22
+### Features
+- Add `ricaun.Revit.DA` to fix issues. (Fix: #7) (Fix: #9)
+
 ## [1.4.2] / 2025-01-16
 ### Features
 - Add `ApplicationExtensions` to check `InAddInContext` and `InEventContext`.
@@ -54,6 +58,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - First Release
 
 [vNext]: ../../compare/1.0.0...HEAD
+[1.5.0]: ../../compare/1.4.2...1.5.0
 [1.4.2]: ../../compare/1.4.1...1.4.2
 [1.4.1]: ../../compare/1.4.0...1.4.1
 [1.4.0]: ../../compare/1.3.1...1.4.0
