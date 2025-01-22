@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
-using Revit.DesignApplication;
+using ricaun.Revit.DA;
 using RevitAddin.DA.Tester.Services;
 using System;
 
@@ -16,9 +16,9 @@ namespace RevitAddin.DA.Tester.Revit
             Console.WriteLine("----------------------------------------");
             Console.WriteLine($"Location: {this.GetType().Assembly.Location}");
             Console.WriteLine("----------------------------------------");
-            Console.WriteLine($"AddInName: \t{Application.ActiveAddInId?.GetAddInName()}");
+            Console.WriteLine($"AddInName: \t{ControlledApplication.ActiveAddInId?.GetAddInName()}");
             Console.WriteLine("----------------------------------------");
-            Application.ApplicationInitialized += Application_ApplicationInitialized;   
+            ControlledApplication.ApplicationInitialized += Application_ApplicationInitialized;   
         }
 
         private void Application_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
@@ -27,10 +27,6 @@ namespace RevitAddin.DA.Tester.Revit
             AddInName = application.ActiveAddInId?.GetAddInName();
         }
 
-        public override void OnShutdown()
-        {
-            
-        }
         public override bool Execute(Application application, string filePath, Document document)
         {
             return new DesignAutomationController().Execute(application, filePath, document);

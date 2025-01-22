@@ -127,12 +127,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ricaun.Revit.DA" Version="*" />
     <PackageReference Include="ricaun.Revit.DB.Shape" Version="*" />
     <PackageReference Include="Autodesk.Forge.DesignAutomation.Revit" Version="$(RevitVersion).*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Revit.DesignApplication\Revit.DesignApplication.csproj" />
   </ItemGroup>
 
   <ItemGroup>

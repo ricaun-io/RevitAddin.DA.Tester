@@ -17,8 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{64
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesignAutomationConsole", "DesignAutomationConsole\DesignAutomationConsole.csproj", "{7F41BE81-4EFB-4FAC-8563-B5EDAEA9F44B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Revit.DesignApplication", "Revit.DesignApplication\Revit.DesignApplication.csproj", "{0966B1C7-6ECE-44D0-A71B-7C26EB598BFF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{7F41BE81-4EFB-4FAC-8563-B5EDAEA9F44B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F41BE81-4EFB-4FAC-8563-B5EDAEA9F44B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F41BE81-4EFB-4FAC-8563-B5EDAEA9F44B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0966B1C7-6ECE-44D0-A71B-7C26EB598BFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0966B1C7-6ECE-44D0-A71B-7C26EB598BFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0966B1C7-6ECE-44D0-A71B-7C26EB598BFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0966B1C7-6ECE-44D0-A71B-7C26EB598BFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
