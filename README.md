@@ -39,6 +39,12 @@ public class OutputModel
 }
 ```
 
+## References
+
+This project uses the following libraries:
+* [ricaun.Revit.DA](https://github.com/ricaun-io/ricaun.Revit.DA) - Design Automation for Revit library utility.
+* [Autodesk.Forge.Oss.DesignAutomation](https://github.com/ricaun-io/forge-api-dotnet-oss.design.automation) - Run Design Automation with OSS library in C#.
+
 ## Installation
 
 * Download bundle version [RevitAddin.DA.Tester.bundle.zip](../../releases/latest/download/RevitAddin.DA.Tester.bundle.zip)
