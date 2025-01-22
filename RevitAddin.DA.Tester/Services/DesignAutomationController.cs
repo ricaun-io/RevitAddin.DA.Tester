@@ -41,9 +41,20 @@ namespace RevitAddin.DA.Tester.Services
             Console.WriteLine($"UI:\t{UI.IsValid()}");
             Console.WriteLine($"App.AddInName:\t{App.AddInName}");
             Console.WriteLine("----------------------------------------");
+            Console.WriteLine($"InAddInContext:\t{application.InAddInContext()}");
+            Console.WriteLine($"InEventContext:\t{application.InEventContext()}");
+            Console.WriteLine("----------------------------------------");
             Console.WriteLine($"Shape:\t{typeof(ricaun.Revit.DB.Shape.Colors).Assembly}");
             Console.WriteLine($"Shape Location:\t{typeof(ricaun.Revit.DB.Shape.Colors).Assembly.Location}");
             Console.WriteLine("----------------------------------------");
+
+            application.DocumentCreated += (s, e) => {
+                Console.WriteLine($"DocumentCreated:\t{e.Document.Title}");
+                Console.WriteLine($"DocumentCreated.AddInName: \t{application.ActiveAddInId?.GetAddInName()}");
+                Console.WriteLine("----------------------------------------");
+            };
+
+            application.NewProjectDocument(UnitSystem.Metric);
 
             return true;
         }

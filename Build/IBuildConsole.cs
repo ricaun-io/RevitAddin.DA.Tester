@@ -19,7 +19,7 @@ public interface IBuildConsole : IHazExample, IRevitPackageBuilder
                 {
                     var resourcesDirectory = project.Directory / "Bundle";
                     Serilog.Log.Information($"Copy Bundle: {file} to {resourcesDirectory}");
-                    FileSystemTasks.CopyFileToDirectory(file, resourcesDirectory, FileExistsPolicy.OverwriteIfNewer);
+                    AbsolutePathExtensions.CopyToDirectory(file, resourcesDirectory, ExistsPolicy.FileOverwriteIfNewer);
                 });
 
             Solution.BuildProject(project, (project) =>
