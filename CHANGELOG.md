@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.5.0] / 2025-01-22
 ### Features
 - Add `ricaun.Revit.DA` to fix issues. (Fix: #7) (Fix: #9)
+### Updated
+- Delete `Revit.DesignApplication` project.
 
 ## [1.4.2] / 2025-01-16
 ### Features
