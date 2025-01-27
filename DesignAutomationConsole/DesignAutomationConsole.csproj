@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ricaun.Autodesk.Forge.Oss.DesignAutomation" Version="*-*" />
+    <PackageReference Include="ricaun.Autodesk.Forge.Oss.DesignAutomation" Version="*" />
   </ItemGroup>
 
   <ItemGroup>

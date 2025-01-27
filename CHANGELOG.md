@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] / 2025-01-27
+### Features
+- Add `ParameterWorkItem3LeggedToken` to set 3-legged token in the work item.
+### Console
+- Update `ricaun.Autodesk.Forge.Oss.DesignAutomation` to `3.1.0`
+### Application
+- Add `UserName` and `LoginUserId`.
+
 ## [1.5.0] / 2025-01-22
 ### Features
 - Add `ricaun.Revit.DA` to fix issues. (Fix: #7) (Fix: #9)
@@ -60,6 +68,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - First Release
 
 [vNext]: ../../compare/1.0.0...HEAD
+[1.5.1]: ../../compare/1.5.0...1.5.1
 [1.5.0]: ../../compare/1.4.2...1.5.0
 [1.4.2]: ../../compare/1.4.1...1.4.2
 [1.4.1]: ../../compare/1.4.0...1.4.1

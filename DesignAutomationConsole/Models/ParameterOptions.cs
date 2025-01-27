@@ -1,4 +1,5 @@
-﻿using Autodesk.Forge.Oss.DesignAutomation.Attributes;
+﻿using Autodesk.Forge.DesignAutomation.Model;
+using Autodesk.Forge.Oss.DesignAutomation.Attributes;
 
 namespace DesignAutomationConsole.Models
 {
@@ -12,6 +13,9 @@ namespace DesignAutomationConsole.Models
         [ParameterOutput("output.json",
             Description = "Output file.")]
         public OutputModel Output { get; set; }
+
+        [ParameterWorkItem3LeggedToken]
+        internal string AccessToken { get; set; } 
 
         //[ParameterOutput("console.txt", DownloadFile = true)]
         //public string Console { get; set; }

@@ -26,6 +26,9 @@ namespace RevitAddin.DA.Tester.Services
             outputModel.Save();
 
             Console.WriteLine("----------------------------------------");
+            Console.WriteLine($"Username: \t{application.Username}");
+            Console.WriteLine($"LoginUserId: \t{application.LoginUserId}");
+            Console.WriteLine("----------------------------------------");
             Console.WriteLine($"AddInName: \t{application.ActiveAddInId?.GetAddInName()}");
             Console.WriteLine($"Input:\t{inputModel}");
             Console.WriteLine($"Output:\t{outputModel}");
@@ -54,7 +57,7 @@ namespace RevitAddin.DA.Tester.Services
                 Console.WriteLine("----------------------------------------");
             };
 
-            application.NewProjectDocument(UnitSystem.Metric);
+            application.NewProjectDocument(UnitSystem.Metric).Close(false);
 
             return true;
         }
